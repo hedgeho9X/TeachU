@@ -1,4 +1,4 @@
-# EduSpark
+# TeachU
 
 ## About
 AI enhanced application can help teachers to teach.
