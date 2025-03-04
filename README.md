@@ -63,7 +63,7 @@ AI enhanced application can help teachers to teach.
 ##### 示例开发流程：
 ```bash
 # 克隆仓库
-git clone git@github.com:hedgeho9X/DouMall.git
+git clone git@github.com:hedgeho9X/EduSpark.git
 
 # 切换到 dev 分支
 git checkout dev
