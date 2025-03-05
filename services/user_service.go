@@ -9,7 +9,7 @@ import (
 )
 
 // CreateUser 根据手机号和明文密码创建新用户
-func CreateUser(phoneNumber, plainPassword string) (*models.User, error) {
+func CreateUser(phoneNumber, plainPassword, username string) (*models.User, error) {
 	// 1. 检查是否已存在相同的手机号
 	var existingUser models.User
 	result := config.DB.Where("phone_number = ?", phoneNumber).First(&existingUser)
@@ -27,6 +27,7 @@ func CreateUser(phoneNumber, plainPassword string) (*models.User, error) {
 	user := models.User{
 		PhoneNumber:  phoneNumber,
 		PasswordHash: string(hash),
+		Username:     username,
 	}
 	if err := config.DB.Create(&user).Error; err != nil {
 		return nil, err
@@ -43,4 +44,27 @@ func GetUserByPhoneNumber(phoneNumber string) (*models.User, error) {
 		return nil, err
 	}
 	return &user, nil
+}
+
+func ResetPasswordService(userID uint, oldPassword, newPassword string) error {
+	// 1. 查找用户
+	var user models.User
+	if err := config.DB.First(&user, userID).Error; err != nil {
+		return errors.New("找不到该用户")
+	}
+	// 2. 验证旧密码
+	if err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(oldPassword)); err != nil {
+		return errors.New("旧密码错误")
+	}
+	// 3. 哈希新密码
+	hash, err := bcrypt.GenerateFromPassword([]byte(newPassword), bcrypt.DefaultCost)
+	if err != nil {
+		return err
+	}
+	// 4. 更新密码
+	user.PasswordHash = string(hash)
+	if err := config.DB.Save(&user).Error; err != nil {
+		return err
+	}
+	return nil
 }

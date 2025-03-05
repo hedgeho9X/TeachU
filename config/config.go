@@ -11,12 +11,12 @@ import (
 var DB *gorm.DB
 
 const (
-	JWTSecret = "your-secret-key-here" // 在生产环境中应该使用环境变量
+	JWTSecret = "hhhwudile.cnm!!!" // 在生产环境中应该使用环境变量
 )
 
 func ConnectDB() {
 	// 修改为你自己的数据库用户名、密码、端口等
-	dsn := "root:123456@tcp(127.0.0.1:3306)/teach_u?charset=utf8mb4&parseTime=True&loc=Local"
+	dsn := "root:Turing3025@tcp(127.0.0.1:3306)/teach_u?charset=utf8mb4&parseTime=True&loc=Local"
 
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {

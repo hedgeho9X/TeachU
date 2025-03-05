@@ -18,6 +18,7 @@ func SetupRouter() *gin.Engine {
 	auth := r.Group("/auth")
 	auth.Use(middlewares.JWTAuth())
 	auth.GET("/profile", controllers.Profile)
+	auth.POST("/resetpassword", controllers.ResetPassword) // 添加重置密码路由
 
 	return r
 }
