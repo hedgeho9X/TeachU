@@ -14,15 +14,19 @@ func SetupRouter() *gin.Engine {
 			"message": "Welcome to TeachU API",
 		})
 	})
-	// 公共路由：注册 & 登录
-	r.POST("/register", controllers.Register)
-	r.POST("/login", controllers.Login)
 
-	// 需要JWT验证的路由
+	// 创建 auth 组
 	auth := r.Group("/auth")
-	auth.Use(middlewares.JWTAuth())
-	auth.GET("/profile", controllers.Profile)
-	auth.POST("/resetpassword", controllers.ResetPassword) // 添加重置密码路由
+
+	// 公共路由：注册 & 登录 (放在 auth 组下，但不需要 JWT 验证)
+	auth.POST("/register", controllers.Register)
+	auth.POST("/login", controllers.Login)
+
+	// 需要JWT验证的路由 (在 auth 组的子组中)
+	protected := auth.Group("")
+	protected.Use(middlewares.JWTAuth())
+	protected.GET("/profile", controllers.Profile)
+	protected.POST("/resetpassword", controllers.ResetPassword)
 
 	return r
 }
