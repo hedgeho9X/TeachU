@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"os"
 
 	ark "github.com/sashabaranov/go-openai"
 )
@@ -26,7 +25,7 @@ func GetAIStream(ctx context.Context, message string) <-chan StreamChunk {
 
 		// 初始化客户端
 		fmt.Println("[服务层] 初始化AI客户端")
-		config := ark.DefaultConfig(os.Getenv("ARK_API_KEY"))
+		config := ark.DefaultConfig("7c150e05-83d5-4fd4-8dc3-a48e9e154487")
 		config.BaseURL = "https://ark.cn-beijing.volces.com/api/v3"
 		client := ark.NewClientWithConfig(config)
 
