@@ -14,7 +14,7 @@ func SetupRouter() *gin.Engine {
 			"message": "Welcome to TeachU API",
 		})
 	})
-
+	r.POST("/chat", controllers.Chat)
 	// 创建 auth 组
 	auth := r.Group("/auth")
 

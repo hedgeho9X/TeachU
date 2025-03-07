@@ -5,6 +5,7 @@ go 1.23.5
 require (
 	github.com/gin-gonic/gin v1.10.0
 	github.com/golang-jwt/jwt/v4 v4.5.0
+	github.com/sashabaranov/go-openai v1.38.0
 	golang.org/x/crypto v0.35.0
 	gorm.io/driver/mysql v1.5.7
 	gorm.io/gorm v1.25.12

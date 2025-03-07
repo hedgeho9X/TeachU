@@ -10,7 +10,8 @@ import (
 )
 
 func main() {
-	// 1. 连接数据库
+
+	//1. 连接数据库
 	config.ConnectDB()
 
 	// 2. 数据表迁移
