@@ -95,7 +95,7 @@ func Login(c *gin.Context) {
 	user, err := services.GetUserByPhoneNumber(input.PhoneNumber)
 	if err != nil {
 		fmt.Printf("用户查找失败: %v\n", err)
-		c.JSON(http.StatusOK, gin.H{"code": 0, "error": "手机号或密码错误"})
+		c.JSON(http.StatusOK, gin.H{"code": 0, "error": "该账号未注册"})
 		return
 	}
 
