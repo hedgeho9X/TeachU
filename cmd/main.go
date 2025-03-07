@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"os"
 
 	"github.com/Hedgeho9X/TeachU/config"
 	"github.com/Hedgeho9X/TeachU/models"
@@ -10,7 +11,7 @@ import (
 )
 
 func main() {
-
+	fmt.Print(os.Getenv("ARK_API_KEY"))
 	//1. 连接数据库
 	config.ConnectDB()
 

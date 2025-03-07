@@ -67,14 +67,12 @@ func GetAIStream(ctx context.Context, message string) <-chan StreamChunk {
 			// 处理有效数据
 			if len(resp.Choices) > 0 {
 				content := resp.Choices[0].Delta.Content
-				fmt.Printf("[服务层] 生成内容: %q\n", content)
 
 				select {
 				case <-ctx.Done():
 					fmt.Println("[服务层] 上下文已取消")
 					return
 				case ch <- StreamChunk{Data: content}:
-					fmt.Println("[服务层] 内容已发送至通道")
 				}
 			}
 		}

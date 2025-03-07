@@ -13,9 +13,9 @@ CREATE TABLE IF NOT EXISTS users (
 );
 
 -- 创建一些测试用户数据
-INSERT INTO users (phone_number, username, password_hash) VALUES
-('13800138000', '测试用户1', '$2a$10$NlBC84MVb7F/sf4e6dB1HO6RiGwIYrRtoVCXtC3YNiYzVRRH5rcMC'), -- 密码: password123
-('13900139000', '测试用户2', '$2a$10$NlBC84MVb7F/sf4e6dB1HO6RiGwIYrRtoVCXtC3YNiYzVRRH5rcMC');
+--INSERT INTO users (phone_number, username, password_hash) VALUES
+--('13800138000', '测试用户1', '$2a$10$NlBC84MVb7F/sf4e6dB1HO6RiGwIYrRtoVCXtC3YNiYzVRRH5rcMC'), -- 密码: password123
+--('13900139000', '测试用户2', '$2a$10$NlBC84MVb7F/sf4e6dB1HO6RiGwIYrRtoVCXtC3YNiYzVRRH5rcMC');
 
 -- 创建索引
 CREATE INDEX idx_users_username ON users(username);

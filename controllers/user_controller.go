@@ -12,7 +12,7 @@ import (
 )
 
 // 推荐在环境变量或配置中存储 Secret
-var jwtSecret = []byte("your-secret-key")
+// var jwtSecret = []byte("your-secret-key")
 
 // 自定义 Claims，存放手机号信息
 type AuthClaims struct {
