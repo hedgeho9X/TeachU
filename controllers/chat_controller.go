@@ -20,7 +20,7 @@ func Chat(c *gin.Context) {
 	}
 
 	// 设置流式响应头
-	c.Writer.Header().Set("Content-Type", "text/plain; charset=utf-8")
+	c.Writer.Header().Set("Content-Type", "application/json; charset=utf-8")
 	c.Writer.Header().Set("Transfer-Encoding", "chunked")
 	c.Writer.Header().Set("Cache-Control", "no-cache")
 	c.Writer.Header().Set("Connection", "keep-alive")
@@ -42,17 +42,26 @@ func Chat(c *gin.Context) {
 		case <-clientGone:
 			fmt.Println("客户端断开连接")
 			return
+
+		// 在流式写入部分添加JSON格式化
 		case chunk, ok := <-stream:
-			if !ok { // 流结束
+			if !ok {
+				// 发送流结束标记
+				c.Writer.Write([]byte("data: {\"type\":\"done\"}\n\n"))
+				c.Writer.Flush()
 				return
 			}
 			if chunk.Error != nil {
-				c.Writer.Write([]byte("错误: " + chunk.Error.Error()))
+				// 格式化错误信息为JSON
+				errJson := fmt.Sprintf(`{"type":"error","message":%q}`, chunk.Error.Error())
+				c.Writer.Write([]byte("data: " + errJson + "\n\n"))
+				c.Writer.Flush()
 				return
 			}
 
-			// 写入分块数据
-			if _, err := c.Writer.Write([]byte(chunk.Data)); err != nil {
+			// 格式化正常数据为JSON
+			jsonData := fmt.Sprintf(`{"type":"data","content":%q}`, chunk.Data)
+			if _, err := c.Writer.Write([]byte("data: " + jsonData + "\n\n")); err != nil {
 				fmt.Println("写入失败:", err)
 				return
 			}
