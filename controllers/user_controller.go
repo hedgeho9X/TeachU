@@ -31,20 +31,20 @@ func Register(c *gin.Context) {
 	}
 	//输入校验
 	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusOK, gin.H{"error": "请求参数错误"})
+		c.JSON(http.StatusOK, gin.H{"code": 0, "error": "请求参数错误"})
 		return
 	}
 	if input.PhoneNumber == "" || input.Password == "" || input.PasswordConfirm == "" || input.Username == "" {
-		c.JSON(http.StatusOK, gin.H{"error": "填写信息不能为空"})
+		c.JSON(http.StatusOK, gin.H{"code": 0, "error": "填写信息不能为空"})
 		return
 	}
 	if input.Password != input.PasswordConfirm {
-		c.JSON(http.StatusOK, gin.H{"error": "两次输入的密码不一致"})
+		c.JSON(http.StatusOK, gin.H{"code": 0, "error": "两次输入的密码不一致"})
 		return
 	}
 	// 检查密码是否符合规则：8-20位，必须包含字母和数字
 	if len(input.Password) < 8 || len(input.Password) > 20 {
-		c.JSON(http.StatusOK, gin.H{"error": "密码长度必须在8-20位之间"})
+		c.JSON(http.StatusOK, gin.H{"code": 0, "error": "密码长度必须在8-20位之间"})
 		return
 	}
 
@@ -61,20 +61,20 @@ func Register(c *gin.Context) {
 	}
 
 	if !hasLetter || !hasNumber {
-		c.JSON(http.StatusOK, gin.H{"error": "密码必须包含字母和数字"})
+		c.JSON(http.StatusOK, gin.H{"code": 0, "error": "密码必须包含字母和数字"})
 		return
 	}
 
 	// 调用 service 层执行注册
-	user, err := services.CreateUser(input.PhoneNumber, input.Password, input.Username)
+	_, err := services.CreateUser(input.PhoneNumber, input.Password, input.Username)
 	if err != nil {
-		c.JSON(http.StatusOK, gin.H{"error": "注册失败: " + err.Error()})
+		c.JSON(http.StatusOK, gin.H{"code": 0, "error": "注册失败: " + err.Error()})
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{
+		"code":    1,
 		"message": "注册成功",
-		"user":    user.PhoneNumber,
 	})
 }
 
@@ -87,7 +87,7 @@ func Login(c *gin.Context) {
 
 	if err := c.ShouldBindJSON(&input); err != nil {
 		fmt.Println("请求参数解析失败:", err)
-		c.JSON(http.StatusOK, gin.H{"error": "请求参数错误"})
+		c.JSON(http.StatusOK, gin.H{"code": 0, "error": "请求参数错误"})
 		return
 	}
 
@@ -95,14 +95,14 @@ func Login(c *gin.Context) {
 	user, err := services.GetUserByPhoneNumber(input.PhoneNumber)
 	if err != nil {
 		fmt.Printf("用户查找失败: %v\n", err)
-		c.JSON(http.StatusOK, gin.H{"error": "手机号或密码错误"})
+		c.JSON(http.StatusOK, gin.H{"code": 0, "error": "手机号或密码错误"})
 		return
 	}
 
 	// 验证密码
 	if err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(input.Password)); err != nil {
 		fmt.Printf("密码验证失败: %v\n", err)
-		c.JSON(http.StatusOK, gin.H{"error": "手机号或密码错误"})
+		c.JSON(http.StatusOK, gin.H{"code": 0, "error": "手机号或密码错误"})
 		return
 	}
 
@@ -113,12 +113,14 @@ func Login(c *gin.Context) {
 	if err != nil {
 		fmt.Printf("Token 生成失败: %v\n", err)
 		c.JSON(http.StatusOK, gin.H{
+			"code":  0,
 			"error": "Token 生成失败",
 		})
 		return
 	}
 	fmt.Printf("Token 生成成功: %v\n", token)
 	c.JSON(http.StatusOK, gin.H{
+		"code":    1,
 		"token":   token,
 		"message": "登录成功",
 	})
@@ -144,17 +146,24 @@ func ResetPassword(c *gin.Context) {
 		NewPassword string `json:"new_password"`
 	}
 	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusOK, gin.H{"error": "请求参数错误"})
+		c.JSON(http.StatusOK, gin.H{
+			"code":  0,
+			"error": "请求参数错误"},
+		)
 		return
 	}
 	// 获取当前登录用户 ID
 	userID, _ := c.Get("userID")
 	// 调用 service 层执行密码校验和更新
 	if err := services.ResetPasswordService(userID.(uint), input.OldPassword, input.NewPassword); err != nil {
-		c.JSON(http.StatusOK, gin.H{"error": err.Error()})
+		c.JSON(http.StatusOK, gin.H{
+			"code":  0,
+			"error": err.Error(),
+		})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{
+		"code":    1,
 		"message": "密码重置成功",
 	})
 }
