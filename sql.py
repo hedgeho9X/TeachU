@@ -22,7 +22,7 @@ def import_csv_to_db(csv_path):
             with open(csv_path, 'r', encoding='utf-8') as f:
                 reader = csv.DictReader(f)
                 for row in reader:
-                    sql = """INSERT INTO teaching_resources 
+                    sql = """INSERT INTO resources 
                             (object_key, file_name, grade, subject, file_size, file_type)
                             VALUES (%s, %s, %s, %s, %s, %s)"""
                     cursor.execute(sql, (
@@ -42,7 +42,7 @@ def search_resources(subject, grade, keyword):
     conn = pymysql.connect(**DB_CONFIG)
     try:
         with conn.cursor(pymysql.cursors.DictCursor) as cursor:
-            sql = """SELECT * FROM teaching_resources
+            sql = """SELECT * FROM resources
                     WHERE subject = %s
                     AND grade = %s
                     AND object_key LIKE %s"""

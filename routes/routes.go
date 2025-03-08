@@ -15,6 +15,7 @@ func SetupRouter() *gin.Engine {
 		})
 	})
 	r.POST("/chat", controllers.Chat)
+	r.GET("/resource", controllers.SearchResources)
 	// 创建 auth 组
 	auth := r.Group("/auth")
 
@@ -25,7 +26,6 @@ func SetupRouter() *gin.Engine {
 	// 需要JWT验证的路由 (在 auth 组的子组中)
 	protected := auth.Group("")
 	protected.Use(middlewares.JWTAuth())
-	protected.GET("/profile", controllers.Profile)
 	protected.POST("/resetpassword", controllers.ResetPassword)
 
 	return r

@@ -126,19 +126,6 @@ func Login(c *gin.Context) {
 	})
 }
 
-// Profile 受保护接口示例
-func Profile(c *gin.Context) {
-	userID, _ := c.Get("userID")
-	username, _ := c.Get("username")
-
-	fmt.Printf("访问个人资料，用户 ID: %v, 用户名: %v\n", userID, username)
-
-	c.JSON(http.StatusOK, gin.H{
-		"user_id":  userID,
-		"username": username,
-	})
-}
-
 func ResetPassword(c *gin.Context) {
 	// 解析请求 JSON
 	var input struct {

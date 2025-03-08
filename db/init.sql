@@ -13,15 +13,21 @@ CREATE TABLE IF NOT EXISTS users (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     UNIQUE KEY idx_phone (phone_number)
 );
--- 创建一些测试数据（密码都是 123456）
-INSERT INTO users (phone_number, username, password_hash) VALUES
-('13800138000', '测试用户1', '$2a$10$NlBC84MVb7F/sf4e6dB1HO6RiGwIYrRtoVCXtC3YNiYzVRRH5rcMC'),
-('13900139000', '测试用户2', '$2a$10$NlBC84MVb7F/sf4e6dB1HO6RiGwIYrRtoVCXtC3YNiYzVRRH5rcMC');-- 创建数据库
+
+
+-- 步骤5：创建数据表（使用之前设计的表结构）
+CREATE TABLE IF NOT EXISTS resources (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    object_key VARCHAR(1000) NOT NULL,
+    file_name VARCHAR(255) NOT NULL,
+    grade VARCHAR(50) NOT NULL,
+    subject VARCHAR(50) NOT NULL,
+    file_size VARCHAR(20) NOT NULL,
+    file_type VARCHAR(20) NOT NULL,
+    INDEX idx_subject_grade (subject, grade),
+    INDEX idx_object_key (object_key(255))
+    INDEX idx_full_search (subject, grade, object_key(255))
+);
 
 -- 创建用户电话索引
 CREATE UNIQUE INDEX idx_users_phone_number ON users(phone_number);
-
-CREATE TABLE IF NOT EXISTS classes (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    
-);
