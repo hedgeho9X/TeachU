@@ -5,7 +5,7 @@ import pymysql
 DB_CONFIG = {
     'host': 'localhost',
     'user': 'root',
-    'password': 'Hedgeho9@',
+    'password': '123456',
     'db': 'teach_u',
     'charset': 'utf8mb4'
 }
@@ -54,7 +54,7 @@ def search_resources(subject, grade, keyword):
 # 使用示例
 if __name__ == "__main__":
     # CSV导入
-    #import_csv_to_db('resources.csv')
+    import_csv_to_db('resources.csv')
     
     
     # 资源搜索
