@@ -4,14 +4,14 @@
 AI enhanced application can help teachers to teach.
 ---
 ## 开发日志
-###2023.03.07
--feat:增加ai对话生成教案功能支持流式传输
-###2025.03.08  
--feat:增加检索资源功能  
--feat:增加下载/预览特定资源功能 (通过oss)
+### 2023.03.07
+- feat:增加ai对话生成教案功能支持流式传输
+### 2025.03.08  
+- feat:增加检索资源功能  
+- feat:增加下载/预览特定资源功能 (通过oss)
 
 ### waiting list
--log存储
+- log存储
 **AUTH**
 - 增加用户邮箱功能，支持验证码
 **CHAT**
