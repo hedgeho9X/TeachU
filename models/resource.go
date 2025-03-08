@@ -9,3 +9,8 @@ type Resource struct {
 	FileSize  string `gorm:"size:20;not null"`
 	FileType  string `gorm:"size:20;not null"`
 }
+
+// // TableName 指定表名
+// func (Resource) TableName() string {
+// 	return "resources"
+// }

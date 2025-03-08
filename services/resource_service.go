@@ -9,7 +9,7 @@ import (
 
 func SearchResources(pageNum, pageSize, q, subject, grade string) ([]models.Resource, error) {
 	var resources []models.Resource
-	query := config.DB.Table("teaching_resources")
+	query := config.DB
 
 	// 构建查询条件
 	if subject != "" {

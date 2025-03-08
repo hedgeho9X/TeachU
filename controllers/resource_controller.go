@@ -22,12 +22,12 @@ func SearchResources(c *gin.Context) {
 	// 调用 service 层执行查找
 	resources, err := services.SearchResources(pageNum, pageSize, q, subject, grade)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"code": -1, "error": err.Error()})
+		c.JSON(http.StatusOK, gin.H{"code": 0, "error": err.Error()})
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"code": 0,
+		"code": 1,
 		"data": resources,
 	})
 }
