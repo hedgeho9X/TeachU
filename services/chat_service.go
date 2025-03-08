@@ -66,7 +66,9 @@ func GetAIStream(ctx context.Context, message string) <-chan StreamChunk {
 
 			// 处理有效数据
 			if len(resp.Choices) > 0 {
+				// 从响应中提取内容
 				content := resp.Choices[0].Delta.Content
+				fmt.Printf("[服务层] 收到内容: %s\n", content)
 
 				select {
 				case <-ctx.Done():
