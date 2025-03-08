@@ -15,7 +15,9 @@ func SetupRouter() *gin.Engine {
 		})
 	})
 	r.POST("/chat", controllers.Chat)
-	r.GET("/resource", controllers.SearchResources)
+	resource := r.Group("/resource")
+	resource.GET("/list", controllers.SearchResources)
+	resource.GET("/object", controllers.GetResource)
 	// 创建 auth 组
 	auth := r.Group("/auth")
 

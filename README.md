@@ -3,12 +3,36 @@
 ## About
 AI enhanced application can help teachers to teach.
 ---
+## 开发日志
+###2023.03.07
+-feat:增加ai对话生成教案功能支持流式传输
+###2025.03.08  
+-feat:增加检索资源功能  
+-feat:增加下载/预览特定资源功能 (通过oss)
 
-## **EduSpark Git 提交规范**
+### waiting list
+-log存储
+**AUTH**
+- 增加用户邮箱功能，支持验证码
+**CHAT**
+- CHAT接收Token
+- 增加chat对话存入数据库
+- 增加ppt,图片生成
+**RESOURCE**
+- 下载资源接收Token or 重定向到登录
+- 实现内网存储访问
+**ANALYSIS**
+- 接入豆包视觉模型分析试卷知识点
+- 建立数据库存储学生成绩
+- 生成基础csv 并等待接收用户csv
+- 实现成绩分析
+- 根据学生成绩推荐资源
+---
+## **TeachU Git 提交规范**
 #### **1. 克隆仓库并切换到 `dev` 分支**
 1. 使用 SSH 克隆远程仓库：
    ```bash
-   git clone git@github.com:hedgeho9X/EduSpark.git
+   git clone git@github.com:hedgeho9X/TeachU.git
    ```
 
 2. 切换到 `dev` 分支：

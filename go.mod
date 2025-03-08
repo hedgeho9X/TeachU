@@ -3,6 +3,7 @@ module github.com/Hedgeho9X/TeachU
 go 1.23.5
 
 require (
+	github.com/aliyun/alibabacloud-oss-go-sdk-v2 v1.2.1
 	github.com/gin-gonic/gin v1.10.0
 	github.com/golang-jwt/jwt/v4 v4.5.0
 	github.com/sashabaranov/go-openai v1.38.0
@@ -38,6 +39,7 @@ require (
 	golang.org/x/net v0.35.0 // indirect
 	golang.org/x/sys v0.30.0 // indirect
 	golang.org/x/text v0.22.0 // indirect
+	golang.org/x/time v0.4.0 // indirect
 	google.golang.org/protobuf v1.36.5 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

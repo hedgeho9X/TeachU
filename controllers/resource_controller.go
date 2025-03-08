@@ -20,14 +20,29 @@ func SearchResources(c *gin.Context) {
 		return
 	}
 	// 调用 service 层执行查找
-	resources, err := services.SearchResources(pageNum, pageSize, q, subject, grade)
+	resources, total, err := services.SearchResources(pageNum, pageSize, q, subject, grade)
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{"code": 0, "error": err.Error()})
 		return
 	}
 
 	c.JSON(http.StatusOK, gin.H{
+		"code":  1,
+		"total": total,
+		"data":  resources,
+	})
+}
+
+func GetResource(c *gin.Context) {
+	// 从URL查询参数获取值
+	objectKey := c.Query("object_key")
+	resultUrl, err := services.GetResourceUseExternal(objectKey)
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{"code": 0, "error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
 		"code": 1,
-		"data": resources,
+		"url":  resultUrl,
 	})
 }
