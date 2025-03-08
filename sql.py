@@ -5,7 +5,7 @@ import pymysql
 DB_CONFIG = {
     'host': 'localhost',
     'user': 'root',
-    'password': 'Hedgeho9@',
+    'password': '123456',
     'db': 'teach_u',
     'charset': 'utf8mb4'
 }
