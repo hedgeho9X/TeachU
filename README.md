@@ -4,7 +4,7 @@
 AI enhanced application can help teachers to teach.
 ---
 ## 开发日志
-### 2023.03.07
+### 2025.03.07
 - feat:增加ai对话生成教案功能支持流式传输
 ### 2025.03.08  
 - feat:增加检索资源功能  
