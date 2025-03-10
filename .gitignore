@@ -1,0 +1,4 @@
+venv/
+.air.toml
+myenv/
+script/

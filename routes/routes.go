@@ -14,7 +14,15 @@ func SetupRouter() *gin.Engine {
 			"message": "Welcome to TeachU API",
 		})
 	})
-	r.POST("/chat", controllers.Chat)
+
+	//ai路由组
+	ai := r.Group("/ai")
+	ai.POST("/chat", controllers.Chat)
+	ai.POST("/ppt/generate", controllers.PptGenerate)
+	ai.POST("/ppt/list", controllers.GetPPtTemplates)
+	ai.POST("/pic/generate", controllers.PicGenerate)
+
+	//资源路由组
 	resource := r.Group("/resource")
 	resource.GET("/list", controllers.SearchResources)
 	resource.GET("/object", controllers.GetResource)

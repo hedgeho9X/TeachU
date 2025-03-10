@@ -36,6 +36,9 @@ func SearchResources(c *gin.Context) {
 func GetResource(c *gin.Context) {
 	// 从URL查询参数获取值
 	objectKey := c.Query("object_key")
+	if objectKey == "" {
+		c.JSON(http.StatusOK, gin.H{"code": 0, "error": "object_key不能为空"})
+	}
 	resultUrl, err := services.GetResourceUseExternal(objectKey)
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{"code": 0, "error": err.Error()})

@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"fmt"
 	"strconv"
 	"time"
 
@@ -86,16 +87,55 @@ func GetResourceUseExternal(objectName string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	// log.Printf("request method:%v\n", result.Method)
-	// log.Printf("request expiration:%v\n", result.Expiration)
-	// log.Printf("request url:%v\n", result.URL)
-	// if len(result.SignedHeaders) > 0 {
-	// 	//当返回结果包含预签名头时，使用预签名URL发送GET请求时也包含相应的请求头，以免出现不一致，导致请求失败和预签名错误
-	// 	log.Printf("signed headers:\n")
-	// 	for k, v := range result.SignedHeaders {
-	// 		log.Printf("%v: %v\n", k, v)
-	// 	}
-	// }
+	fmt.Printf("request method:%v\n", result.Method)
+	fmt.Printf("request expiration:%v\n", result.Expiration)
+	fmt.Printf("request url:%v\n", result.URL)
+	if len(result.SignedHeaders) > 0 {
+		//当返回结果包含预签名头时，使用预签名URL发送GET请求时也包含相应的请求头，以免出现不一致，导致请求失败和预签名错误
+		fmt.Printf("signed headers:\n")
+		for k, v := range result.SignedHeaders {
+			fmt.Printf("%v: %v\n", k, v)
+		}
+	}
 
 	return result.URL, nil
 }
+
+// func PreviewResourceUseExternal(objectName string) (string, error) {
+// 	// 加载默认配置并设置凭证提供者和区域
+// 	region := "cn-chengdu"
+// 	bucketName := "teachu"
+// 	cfg := oss.LoadDefaultConfig().
+// 		WithCredentialsProvider(credentials.NewEnvironmentVariableCredentialsProvider()).
+// 		WithRegion(region).
+// 		// 请填写您的自定义域名。例如http://static.example.com。
+// 		WithEndpoint("http://oss.hedgeho9.cn").
+// 		WithUseCName(true)
+
+// 	// 创建OSS客户端
+// 	client := oss.NewClient(cfg)
+
+// 	// 生成GetObject的预签名URL
+// 	result, err := client.Presign(context.TODO(), &oss.GetObjectRequest{
+// 		Bucket: oss.Ptr(bucketName),
+// 		Key:    oss.Ptr(objectName),
+// 		// 设置文档处理参数
+// 		Process: oss.Ptr("doc/preview,export_1,print_1/watermark,text_5YaF6YOo6LWE5paZ,size_30,t_60"),
+// 	}, oss.PresignExpires(10*time.Minute))
+
+// 	if err != nil {
+// 		log.Fatalf("failed to get object presign %v", err)
+// 	}
+
+// 	log.Printf("request method:%v\n", result.Method)
+// 	log.Printf("request expiration:%v\n", result.Expiration)
+// 	log.Printf("request url:%v\n", result.URL)
+
+// 	if len(result.SignedHeaders) > 0 {
+// 		// 当返回结果包含签名头时，使用签名URL发送GET请求时也包含相应的请求头，以免出现不一致，导致请求失败和签名错误
+// 		log.Printf("signed headers:\n")
+// 		for k, v := range result.SignedHeaders {
+// 			log.Printf("%v: %v\n", k, v)
+// 		}
+// 	}
+// }
