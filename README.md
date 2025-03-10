@@ -4,7 +4,7 @@
 AI enhanced application can help teachers to teach.
 ---
 ## 开发日志
-### 2023.03.07
+### 2025.03.07
 - feat:增加ai对话生成教案功能支持流式传输
 ### 2025.03.08  
 - feat:增加检索资源功能  
@@ -12,16 +12,16 @@ AI enhanced application can help teachers to teach.
 
 ### waiting list
 - log存储
-**AUTH**
+#### **AUTH**
 - 增加用户邮箱功能，支持验证码
-**CHAT**
+#### **CHAT**
 - CHAT接收Token
 - 增加chat对话存入数据库
 - 增加ppt,图片生成
-**RESOURCE**
+#### **RESOURCE**
 - 下载资源接收Token or 重定向到登录
 - 实现内网存储访问
-**ANALYSIS**
+#### **ANALYSIS**
 - 接入豆包视觉模型分析试卷知识点
 - 建立数据库存储学生成绩
 - 生成基础csv 并等待接收用户csv
