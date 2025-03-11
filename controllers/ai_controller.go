@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/Hedgeho9X/TeachU/services"
 	"github.com/gin-gonic/gin"
@@ -139,20 +140,17 @@ func GetPPTProgress(c *gin.Context) {
 		AppID:  "8a1fff11",
 		Secret: "NDFkYzU1MDZmODY0Y2ZhNTgzYTg1OTU0",
 	}
-	//获取并解析json参数
-	var input struct {
-		SID string `json:"sid" binding:"required"`
-	}
-	if err := c.ShouldBindJSON(&input); err != nil {
+	//获取并解析query参数
+	sid := c.Query("sid")
+	if sid == "" {
 		c.JSON(http.StatusOK, gin.H{
 			"code": 0,
-			"msg":  "参数错误",
-			"data": err.Error(),
+			"msg":  "sid不能为空",
 		})
 		return
 	}
 	//获取ppt生成进度
-	progressRes, err := services.GetPPTProgress(auth, input.SID)
+	progressRes, err := services.GetPPTProgress(auth, sid)
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{
 			"code": 0,
@@ -168,21 +166,26 @@ func GetPPTProgress(c *gin.Context) {
 }
 
 func GetPPtTemplates(c *gin.Context) {
-	var input struct {
-		Style    string `json:"style"`     // 风格类型
-		Color    string `json:"color"`     // 颜色类型
-		Industry string `json:"industry"`  // 行业类型
-		PageNum  int    `json:"page_num"`  // 页数
-		PageSize int    `json:"page_size"` // 每页数量
+	// 从query参数中获取输入
+	style := c.Query("style")        // 风格类型
+	color := c.Query("color")        // 颜色类型
+	industry := c.Query("industry")  // 行业类型
+	pageNum := c.Query("page_num")   // 页数
+	pageSize := c.Query("page_size") // 每页数量
+
+	// 转换页码和每页数量为整数
+	pageNumInt := 1
+	if pageNum != "" {
+		if num, err := strconv.Atoi(pageNum); err == nil {
+			pageNumInt = num
+		}
 	}
 
-	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusOK, gin.H{
-			"code": 0,
-			"msg":  "参数错误",
-			"data": err.Error(),
-		})
-		return
+	pageSizeInt := 10
+	if pageSize != "" {
+		if size, err := strconv.Atoi(pageSize); err == nil {
+			pageSizeInt = size
+		}
 	}
 
 	auth := &services.AuthConfig{
@@ -195,7 +198,7 @@ func GetPPtTemplates(c *gin.Context) {
 		"简约": true, "卡通": true, "商务": true, "创意": true,
 		"国风": true, "清新": true, "扁平": true, "插画": true, "节日": true,
 	}
-	if input.Style != "" && !validStyles[input.Style] {
+	if style != "" && !validStyles[style] {
 		c.JSON(http.StatusOK, gin.H{
 			"code": 0,
 			"msg":  "无效的风格类型",
@@ -208,7 +211,7 @@ func GetPPtTemplates(c *gin.Context) {
 		"蓝色": true, "绿色": true, "红色": true, "紫色": true, "黑色": true,
 		"灰色": true, "黄色": true, "粉色": true, "橙色": true,
 	}
-	if input.Color != "" && !validColors[input.Color] {
+	if color != "" && !validColors[color] {
 		c.JSON(http.StatusOK, gin.H{
 			"code": 0,
 			"msg":  "无效的颜色类型",
@@ -219,7 +222,7 @@ func GetPPtTemplates(c *gin.Context) {
 	// 验证行业参数
 	validIndustries := map[string]bool{
 		"教育培训": true, "学院": true}
-	if input.Industry != "" && !validIndustries[input.Industry] {
+	if industry != "" && !validIndustries[industry] {
 		c.JSON(http.StatusOK, gin.H{
 			"code": 0,
 			"msg":  "无效的行业类型",
@@ -229,11 +232,11 @@ func GetPPtTemplates(c *gin.Context) {
 
 	// 查询PPT主题列表
 	themeReq := services.PPTThemeRequest{
-		Style:    input.Style,
-		Color:    input.Color,
-		Industry: input.Industry,
-		PageNum:  input.PageNum,
-		PageSize: input.PageSize,
+		Style:    style,
+		Color:    color,
+		Industry: industry,
+		PageNum:  pageNumInt,
+		PageSize: pageSizeInt,
 	}
 
 	themeRes, err := services.GetPPTThemeList(auth, themeReq)
