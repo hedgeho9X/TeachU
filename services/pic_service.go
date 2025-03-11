@@ -41,13 +41,13 @@ func PicGenerate(req PicGenerateRequest) (map[string]interface{}, error) {
 		"sr_steps":          20,
 		"is_only_sr":        false,
 		"return_url":        true,
-		// "logo_info": map[string]interface{}{
-		// 	"add_logo":          false,
-		// 	"position":          0,
-		// 	"logo_text_content": "这里是明水印内容",
-		// 	"language":          0,
-		// 	"opacity":           0.3,
-		// },
+		"logo_info": map[string]interface{}{
+			"add_logo":          false,
+			"position":          0,
+			"logo_text_content": "EduSpark",
+			"language":          0,
+			"opacity":           0.3,
+		},
 	}
 
 	pics, _, err := visual.DefaultInstance.CVProcess(reqBody)

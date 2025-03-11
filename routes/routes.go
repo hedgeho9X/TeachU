@@ -19,16 +19,17 @@ func SetupRouter() *gin.Engine {
 	ai := r.Group("/ai")
 	ai.POST("/chat", controllers.Chat)
 	ai.POST("/ppt/generate", controllers.PptGenerate)
-	ai.POST("/ppt/list", controllers.GetPPtTemplates)
+	ai.GET("/ppt/progress", controllers.GetPPTProgress)
+	ai.GET("/ppt/list", controllers.GetPPtTemplates)
 	ai.POST("/pic/generate", controllers.PicGenerate)
 
 	//资源路由组
 	resource := r.Group("/resource")
 	resource.GET("/list", controllers.SearchResources)
 	resource.GET("/object", controllers.GetResource)
+
 	// 创建 auth 组
 	auth := r.Group("/auth")
-
 	// 公共路由：注册 & 登录 (放在 auth 组下，但不需要 JWT 验证)
 	auth.POST("/register", controllers.Register)
 	auth.POST("/login", controllers.Login)

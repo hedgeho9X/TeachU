@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"net/http"
-	"time"
 
 	"github.com/Hedgeho9X/TeachU/services"
 	"github.com/gin-gonic/gin"
@@ -133,44 +132,39 @@ func PptGenerate(c *gin.Context) {
 		"data": pptRes,
 	})
 	fmt.Printf("PPT生成响应: %+v\n", pptRes)
+}
 
-	// 查询生成进度
-	if pptRes.Data != nil {
-		data := pptRes.Data.(map[string]interface{})
-		sid := data["sid"].(string)
-		// 轮询检查PPT生成进度
-		for {
-			progressRes, err := services.GetPPTProgress(auth, sid)
-			if err != nil {
-				c.JSON(http.StatusOK, gin.H{
-					"code": 0,
-					"msg":  "查询生成进度失败",
-					"data": err.Error(),
-				})
-				break
-			}
-			fmt.Printf("生成进度: %+v\n", progressRes)
-			c.JSON(http.StatusOK, gin.H{
-				"code": 1,
-				"msg":  "查询生成进度成功",
-				"data": progressRes,
-			})
-			// 检查是否生成完成
-			if progressRes.Data != nil {
-				pptStatus := progressRes.Data.(map[string]interface{})["pptStatus"].(string)
-				if pptStatus == "done" { // 假设状态2表示生成完成
-					fmt.Println("PPT生成完成！")
-					c.JSON(http.StatusOK, gin.H{
-						"code": 1,
-						"msg":  "PPT生成完成",
-						"data": progressRes,
-					})
-					break
-				}
-			}
-		}
-		time.Sleep(5 * time.Second)
+func GetPPTProgress(c *gin.Context) {
+	auth := &services.AuthConfig{
+		AppID:  "8a1fff11",
+		Secret: "NDFkYzU1MDZmODY0Y2ZhNTgzYTg1OTU0",
 	}
+	//获取并解析json参数
+	var input struct {
+		SID string `json:"sid" binding:"required"`
+	}
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"code": 0,
+			"msg":  "参数错误",
+			"data": err.Error(),
+		})
+		return
+	}
+	//获取ppt生成进度
+	progressRes, err := services.GetPPTProgress(auth, input.SID)
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"code": 0,
+			"msg":  "查询生成进度失败",
+			"data": err.Error(),
+		})
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"code": 1,
+		"msg":  "查询生成进度成功",
+		"data": progressRes,
+	})
 }
 
 func GetPPtTemplates(c *gin.Context) {
