@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/Hedgeho9X/TeachU/config"
 	"github.com/Hedgeho9X/TeachU/services"
 	"github.com/gin-gonic/gin"
 )
@@ -103,8 +104,8 @@ func PptGenerate(c *gin.Context) {
 	}
 
 	auth := &services.AuthConfig{
-		AppID:  "8a1fff11",
-		Secret: "NDFkYzU1MDZmODY0Y2ZhNTgzYTg1OTU0",
+		AppID:  config.XunFei_ID,
+		Secret: config.XunFei_Secret,
 	}
 
 	// // 示例1：查询PPT主题列表
@@ -137,8 +138,8 @@ func PptGenerate(c *gin.Context) {
 
 func GetPPTProgress(c *gin.Context) {
 	auth := &services.AuthConfig{
-		AppID:  "8a1fff11",
-		Secret: "NDFkYzU1MDZmODY0Y2ZhNTgzYTg1OTU0",
+		AppID:  config.XunFei_ID,
+		Secret: config.XunFei_Secret,
 	}
 	//获取并解析query参数
 	sid := c.Query("sid")
@@ -166,31 +167,42 @@ func GetPPTProgress(c *gin.Context) {
 }
 
 func GetPPtTemplates(c *gin.Context) {
-	// 从query参数中获取输入
-	style := c.Query("style")        // 风格类型
-	color := c.Query("color")        // 颜色类型
-	industry := c.Query("industry")  // 行业类型
-	pageNum := c.Query("page_num")   // 页数
-	pageSize := c.Query("page_size") // 每页数量
+	// 从query参数中获取输入并进行URL解码
+	style := c.Query("style")
+	color := c.Query("color")
+	industry := c.Query("industry")
+	pageNum := c.Query("page_num")
+	pageSize := c.Query("page_size")
+
+	// 去除空格
+	// style = strings.TrimSpace(style)
+	// color = strings.TrimSpace(color)
+	// industry = strings.TrimSpace(industry)
+	// pageNum = strings.TrimSpace(pageNum)
+	// pageSize = strings.TrimSpace(pageSize)
+	// fmt.Print(style, color, industry, pageNum, pageSize)
+	// // 从query参数中获取输入
+	// style := c.Query("style")        // 风格类型
+	// color := c.Query("color")        // 颜色类型
+	// industry := c.Query("industry")  // 行业类型
+	// pageNum := c.Query("page_num")   // 页数
+	// pageSize := c.Query("page_size") // 每页数量
 
 	// 转换页码和每页数量为整数
 	pageNumInt := 1
-	if pageNum != "" {
-		if num, err := strconv.Atoi(pageNum); err == nil {
-			pageNumInt = num
-		}
+	if num, err := strconv.Atoi(pageNum); err == nil && num > 0 {
+		pageNumInt = num
 	}
 
 	pageSizeInt := 10
-	if pageSize != "" {
-		if size, err := strconv.Atoi(pageSize); err == nil {
-			pageSizeInt = size
-		}
+	if size, err := strconv.Atoi(pageSize); err == nil && size > 0 {
+		pageSizeInt = size
 	}
-
+	fmt.Printf("解码后参数: style=[%s], color=[%s], industry=[%s], page_num=[%s], page_size=[%s]\n",
+		style, color, industry, pageNum, pageSize)
 	auth := &services.AuthConfig{
-		AppID:  "8a1fff11",
-		Secret: "NDFkYzU1MDZmODY0Y2ZhNTgzYTg1OTU0",
+		AppID:  config.XunFei_ID,
+		Secret: config.XunFei_Secret,
 	}
 
 	// 验证风格参数

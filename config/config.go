@@ -24,5 +24,7 @@ func ConnectDB() {
 }
 
 const (
-	JWTSecret = "hhhwudile.cnm!!!" // 在生产环境中应该使用环境变量
+	JWTSecret     = "hhhwudile.cnm!!!" // 在生产环境中应该使用环境变量
+	XunFei_ID     = "cc0dd34f"
+	XunFei_Secret = "ZmFmYTFlOTE0MzI3NjAxZDFlMzNmMGQ0"
 )
