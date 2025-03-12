@@ -142,7 +142,7 @@ func GetPPTProgress(auth *AuthConfig, sid string) (*CommonResponse, error) {
 // 	-    AppID:  "8a1fff11",
 // 	-    Secret: "NDFkYzU1MDZmODY0Y2ZhNTgzYTg1OTU0",
 // 	- }
-// 	
+//
 // 	// 建议改为配置加载
 // 	+ var config struct {
 // 	+    PPT struct {
@@ -151,7 +151,7 @@ func GetPPTProgress(auth *AuthConfig, sid string) (*CommonResponse, error) {
 // 	+    } `mapstructure:"ppt"`
 // 	+ }
 // 	+ viper.Unmarshal(&config)
-// 	
+//
 // 	// 示例1：查询PPT主题列表
 // 	themeReq := PPTThemeRequest{
 // 		Style:    "商务",

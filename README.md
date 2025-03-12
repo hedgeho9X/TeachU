@@ -9,6 +9,7 @@ AI enhanced application can help teachers to teach.
 ### 2025.03.08  
 - feat:增加检索资源功能  
 - feat:增加下载/预览特定资源功能 (通过oss)
+### 2025.03.09
 
 ### waiting list
 - log存储

@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"os"
 
 	"github.com/volcengine/volcengine-go-sdk/service/arkruntime"
 	"github.com/volcengine/volcengine-go-sdk/service/arkruntime/model"
@@ -17,7 +18,7 @@ func main() {
 	const Model = "ep-20250311120726-h7xml"
 	// 使用 API Key创建一个客户端，从环境变量中获取 API Key（https://www.volcengine.com/docs/82379/1361424）
 	client := arkruntime.NewClientWithApiKey(
-		"7c150e05-83d5-4fd4-8dc3-a48e9e154487",
+		os.Getenv("ARK_API_KEY"),
 	)
 	// 创建一个新的上下文
 	goCtx := context.Background()
