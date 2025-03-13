@@ -17,40 +17,31 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-// CreateUser 根据手机号和明文密码创建新用户
-func CreateUser(phoneNumber, plainPassword, username, email string) (*models.User, error) {
-	// 1. 检查是否已存在相同账号
-	var existingUser models.User
+// CreateUser 根据用户对象和明文密码创建新用户
+func CreateUser(user *models.User, plainPassword string) (*models.User, error) {
 	// 检查手机号是否已被注册
-	result := config.DB.Where("phone_number = ?", phoneNumber).First(&existingUser)
-	if result.Error == nil {
+	if err := config.DB.Where("phone_number = ?", user.PhoneNumber).First(&models.User{}).Error; err == nil {
 		return nil, errors.New("该手机号已被注册")
 	}
 
 	// 检查邮箱是否已被注册
-	result = config.DB.Where("email = ?", email).First(&existingUser)
-	if result.Error == nil {
+	if err := config.DB.Where("email = ?", user.Email).First(&models.User{}).Error; err == nil {
 		return nil, errors.New("该邮箱已被注册")
 	}
 
-	// 2. 对密码进行哈希加密
+	// 对密码进行哈希加密
 	hash, err := bcrypt.GenerateFromPassword([]byte(plainPassword), bcrypt.DefaultCost)
 	if err != nil {
 		return nil, err
 	}
+	user.PasswordHash = string(hash)
 
-	// 3. 插入数据库
-	user := models.User{
-		PhoneNumber:  phoneNumber,
-		PasswordHash: string(hash),
-		Username:     username,
-		Email:        email,
-	}
-	if err := config.DB.Create(&user).Error; err != nil {
+	// 插入数据库
+	if err := config.DB.Create(user).Error; err != nil {
 		return nil, err
 	}
 
-	return &user, nil
+	return user, nil
 }
 
 // GetUserByPhoneNumber 根据手机号获取用户

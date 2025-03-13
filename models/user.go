@@ -10,6 +10,7 @@ type User struct {
 	PhoneNumber  string `gorm:"uniqueIndex:idx_phone;size:20;not null"` // 指定索引长度为20
 	Email        string `gorm:"uniqueIndex:idx_email;size:100"`
 	Username     string `gorm:"size:50"`
+	Subject      string `gorm:"size:50"`
 	PasswordHash string `gorm:"not null;size:255"`
 	CreatedAt    time.Time
 	UpdatedAt    time.Time

@@ -9,6 +9,7 @@ import (
 	"github.com/golang-jwt/jwt/v4"
 	"golang.org/x/crypto/bcrypt"
 
+	"github.com/Hedgeho9X/TeachU/models"
 	"github.com/Hedgeho9X/TeachU/services"
 )
 
@@ -30,6 +31,7 @@ func Register(c *gin.Context) {
 		Password        string `json:"password"`
 		PasswordConfirm string `json:"password_confirm"`
 		Username        string `json:"username"`
+		Subject         string `json:"subject"`
 		Email           string `json:"email"`
 		Code            string `json:"code"`
 	}
@@ -38,10 +40,47 @@ func Register(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"code": 0, "error": "请求参数错误"})
 		return
 	}
-	if input.PhoneNumber == "" || input.Password == "" || input.PasswordConfirm == "" || input.Username == "" {
-		c.JSON(http.StatusOK, gin.H{"code": 0, "error": "填写信息不能为空"})
+	// 检查必填字段
+	fieldNames := map[string]string{
+		"phone_number":     "手机号",
+		"password":         "密码",
+		"password_confirm": "确认密码",
+		"username":         "用户名",
+		"email":            "邮箱",
+		"code":             "验证码",
+		"subject":          "学科",
+	}
+	requiredFields := map[string]string{
+		"phone_number":     input.PhoneNumber,
+		"password":         input.Password,
+		"password_confirm": input.PasswordConfirm,
+		"username":         input.Username,
+		"email":            input.Email,
+		"code":             input.Code,
+		"subject":          input.Subject,
+	}
+	for field, value := range requiredFields {
+		if value == "" {
+			c.JSON(http.StatusOK, gin.H{
+				"code":  0,
+				"error": fmt.Sprintf("%s不能为空", fieldNames[field]),
+			})
+			return
+		}
+	}
+	// 检查手机号格式
+	if ok, _ := regexp.MatchString(`^1[3456789]\d{9}$`, input.PhoneNumber); !ok {
+		c.JSON(http.StatusOK, gin.H{"code": 0, "error": "手机号格式错误"})
 		return
 	}
+
+	// 检查学科必须为语数外物化生政史地
+	if ok, _ := regexp.MatchString(`^(语文|数学|英语|物理|化学|生物|政治|历史|地理)$`, input.Subject); !ok {
+		c.JSON(http.StatusOK, gin.H{"code": 0, "error": "学科信息有误"})
+		return
+	}
+
+	// 检查密码是否相同
 	if input.Password != input.PasswordConfirm {
 		c.JSON(http.StatusOK, gin.H{"code": 0, "error": "两次输入的密码不一致"})
 		return
@@ -51,6 +90,7 @@ func Register(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"code": 0, "error": "密码长度必须在8-20位之间"})
 		return
 	}
+	//检查邮箱正则
 	emailPattern := `^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`
 	matched, err := regexp.MatchString(emailPattern, input.Email)
 	if err != nil {
@@ -78,11 +118,11 @@ func Register(c *gin.Context) {
 			hasNumber = true
 		}
 	}
-
 	if !hasLetter || !hasNumber {
 		c.JSON(http.StatusOK, gin.H{"code": 0, "error": "密码必须包含字母和数字"})
 		return
 	}
+	//验证邮箱验证码
 	email := services.NewEmailVerificationService(services.EmailConfig{
 		From:      "rjl7@qq.com", // 改为小写
 		FromAlias: "EduSpark",
@@ -97,13 +137,18 @@ func Register(c *gin.Context) {
 		)
 		return
 	}
-	// 调用 service 层执行注册
-	_, err = services.CreateUser(input.PhoneNumber, input.Password, input.Username, input.Email)
+	userObj := &models.User{
+		PhoneNumber: input.PhoneNumber,
+		Username:    input.Username,
+		Email:       input.Email,
+		Subject:     input.Subject,
+	}
+	_, err = services.CreateUser(userObj, input.Password)
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{"code": 0, "error": "注册失败: " + err.Error()})
 		return
 	}
-
+	// 调用 service 层执行注册
 	c.JSON(http.StatusOK, gin.H{
 		"code":    1,
 		"message": "注册成功",
@@ -214,6 +259,7 @@ func Email2Login(c *gin.Context) {
 	})
 
 }
+
 func ResetPassword(c *gin.Context) {
 	// 解析请求 JSON
 	var input struct {
@@ -241,6 +287,103 @@ func ResetPassword(c *gin.Context) {
 		"code":    1,
 		"message": "密码重置成功",
 	})
+}
+
+// ForgetPassword 通过邮箱验证码重置密码
+func ForgetPassword(c *gin.Context) {
+	// 解析请求 JSON
+	var input struct {
+		Email       string `json:"email"`
+		Code        string `json:"code"`
+		NewPassword string `json:"new_password"`
+	}
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"code":  0,
+			"error": "请求参数错误"},
+		)
+		return
+	}
+
+	// 校验邮箱格式
+	emailPattern := `^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`
+	matched, err := regexp.MatchString(emailPattern, input.Email)
+	if err != nil || !matched {
+		c.JSON(http.StatusOK, gin.H{
+			"code":  0,
+			"error": "邮箱格式不正确"},
+		)
+		return
+	}
+
+	// 校验密码格式
+	if len(input.NewPassword) < 8 || len(input.NewPassword) > 20 {
+		c.JSON(http.StatusOK, gin.H{
+			"code":  0,
+			"error": "密码长度必须在8-20位之间"},
+		)
+		return
+	}
+
+	// 检查是否同时包含字母和数字
+	hasLetter := false
+	hasNumber := false
+	for _, char := range input.NewPassword {
+		if (char >= 'a' && char <= 'z') || (char >= 'A' && char <= 'Z') {
+			hasLetter = true
+		}
+		if char >= '0' && char <= '9' {
+			hasNumber = true
+		}
+	}
+
+	if !hasLetter || !hasNumber {
+		c.JSON(http.StatusOK, gin.H{
+			"code":  0,
+			"error": "密码必须包含字母和数字"},
+		)
+		return
+	}
+
+	// 验证邮箱验证码
+	email := services.NewEmailVerificationService(services.EmailConfig{
+		From:      "rjl7@qq.com", // 改为小写
+		FromAlias: "EduSpark",
+		Password:  "nqwryufsseyxfaei",
+		Host:      "smtp.qq.com",
+		Port:      465, // 改为 SSL 端口
+	})
+	if !email.VerifyCode(input.Email, input.Code) {
+		c.JSON(http.StatusOK, gin.H{
+			"code":  0,
+			"error": "验证码验证失败"},
+		)
+		return
+	}
+
+	// 根据邮箱查找用户
+	user, err := services.GetUserByEmail(input.Email)
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"code":  0,
+			"error": "该邮箱未注册"},
+		)
+		return
+	}
+
+	// 更新用户密码
+	if err := services.UpdatePassword(user.ID, input.NewPassword); err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"code":  0,
+			"error": "密码重置失败: " + err.Error()},
+		)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"code":    1,
+		"message": "密码重置成功"},
+	)
 }
 
 func SendCode(c *gin.Context) {
@@ -351,101 +494,4 @@ func VerifyCode(c *gin.Context) {
 		"code":    1,
 		"message": "验证码验证成功",
 	})
-}
-
-// ForgetPassword 通过邮箱验证码重置密码
-func ForgetPassword(c *gin.Context) {
-	// 解析请求 JSON
-	var input struct {
-		Email       string `json:"email"`
-		Code        string `json:"code"`
-		NewPassword string `json:"new_password"`
-	}
-	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusOK, gin.H{
-			"code":  0,
-			"error": "请求参数错误"},
-		)
-		return
-	}
-
-	// 校验邮箱格式
-	emailPattern := `^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`
-	matched, err := regexp.MatchString(emailPattern, input.Email)
-	if err != nil || !matched {
-		c.JSON(http.StatusOK, gin.H{
-			"code":  0,
-			"error": "邮箱格式不正确"},
-		)
-		return
-	}
-
-	// 校验密码格式
-	if len(input.NewPassword) < 8 || len(input.NewPassword) > 20 {
-		c.JSON(http.StatusOK, gin.H{
-			"code":  0,
-			"error": "密码长度必须在8-20位之间"},
-		)
-		return
-	}
-
-	// 检查是否同时包含字母和数字
-	hasLetter := false
-	hasNumber := false
-	for _, char := range input.NewPassword {
-		if (char >= 'a' && char <= 'z') || (char >= 'A' && char <= 'Z') {
-			hasLetter = true
-		}
-		if char >= '0' && char <= '9' {
-			hasNumber = true
-		}
-	}
-
-	if !hasLetter || !hasNumber {
-		c.JSON(http.StatusOK, gin.H{
-			"code":  0,
-			"error": "密码必须包含字母和数字"},
-		)
-		return
-	}
-
-	// 验证邮箱验证码
-	email := services.NewEmailVerificationService(services.EmailConfig{
-		From:      "rjl7@qq.com", // 改为小写
-		FromAlias: "EduSpark",
-		Password:  "nqwryufsseyxfaei",
-		Host:      "smtp.qq.com",
-		Port:      465, // 改为 SSL 端口
-	})
-	if !email.VerifyCode(input.Email, input.Code) {
-		c.JSON(http.StatusOK, gin.H{
-			"code":  0,
-			"error": "验证码验证失败"},
-		)
-		return
-	}
-
-	// 根据邮箱查找用户
-	user, err := services.GetUserByEmail(input.Email)
-	if err != nil {
-		c.JSON(http.StatusOK, gin.H{
-			"code":  0,
-			"error": "该邮箱未注册"},
-		)
-		return
-	}
-
-	// 更新用户密码
-	if err := services.UpdatePassword(user.ID, input.NewPassword); err != nil {
-		c.JSON(http.StatusOK, gin.H{
-			"code":  0,
-			"error": "密码重置失败: " + err.Error()},
-		)
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{
-		"code":    1,
-		"message": "密码重置成功"},
-	)
 }
