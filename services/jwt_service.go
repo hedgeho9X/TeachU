@@ -10,12 +10,11 @@ import (
 	"github.com/Hedgeho9X/TeachU/models"
 )
 
-func GenerateToken(userID uint, username string) (string, error) {
-	fmt.Printf("正在为用户生成 Token: ID=%d, 用户名=%s\n", userID, username)
+func GenerateToken(userID uint) (string, error) {
+	// fmt.Printf("正在为用户生成 Token: ID=%d, 用户名=%s\n", userID, username)
 
 	claims := models.Claims{
-		UserID:   userID,
-		Username: username,
+		UserID: userID,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(24 * time.Hour)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),

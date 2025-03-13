@@ -33,6 +33,7 @@ func SetupRouter() *gin.Engine {
 	// 公共路由：注册 & 登录 (放在 auth 组下，但不需要 JWT 验证)
 	auth.POST("/register", controllers.Register)
 	auth.POST("/login", controllers.Login)
+	auth.POST("/email2login", controllers.Email2Login)
 	auth.POST("/sendcode", controllers.SendCode)
 	auth.POST("/verifycode", controllers.VerifyCode)
 	auth.POST("/forgetpassword", controllers.ForgetPassword)

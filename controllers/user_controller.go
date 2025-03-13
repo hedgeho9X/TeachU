@@ -16,8 +16,9 @@ import (
 // var jwtSecret = []byte("your-secret-key")
 
 // 自定义 Claims，存放手机号信息
+// 修改 AuthClaims
 type AuthClaims struct {
-	PhoneNumber string `json:"phone_number"`
+	UserID uint64 `json:"user_id"`
 	jwt.RegisteredClaims
 }
 
@@ -55,7 +56,7 @@ func Register(c *gin.Context) {
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{
 			"code":  0,
-			"error": "邮箱格式校验失败"},
+			"error": err},
 		)
 		return
 	}
@@ -125,24 +126,24 @@ func Login(c *gin.Context) {
 	// 查找用户
 	user, err := services.GetUserByPhoneNumber(input.PhoneNumber)
 	if err != nil {
-		fmt.Printf("用户查找失败: %v\n", err)
+		// fmt.Printf("用户查找失败: %v\n", err)
 		c.JSON(http.StatusOK, gin.H{"code": 0, "error": "该账号未注册"})
 		return
 	}
 
 	// 验证密码
 	if err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(input.Password)); err != nil {
-		fmt.Printf("密码验证失败: %v\n", err)
+		// fmt.Printf("密码验证失败: %v\n", err)
 		c.JSON(http.StatusOK, gin.H{"code": 0, "error": "手机号或密码错误"})
 		return
 	}
 
-	fmt.Printf("用户 %s 登录成功，准备生成 Token\n", user.PhoneNumber)
+	// fmt.Printf("用户 %s 登录成功，准备生成 Token\n", user.PhoneNumber)
 
 	// 生成 Token
-	token, err := services.GenerateToken(uint(user.ID), user.PhoneNumber)
+	token, err := services.GenerateToken(uint(user.ID))
 	if err != nil {
-		fmt.Printf("Token 生成失败: %v\n", err)
+		// fmt.Printf("Token 生成失败: %v\n", err)
 		c.JSON(http.StatusOK, gin.H{
 			"code":  0,
 			"error": "Token 生成失败",
@@ -157,6 +158,62 @@ func Login(c *gin.Context) {
 	})
 }
 
+func Email2Login(c *gin.Context) {
+	var input struct {
+		Email string `json:"email" binding:"required"`
+		Code  string `json:"code" binding:"required"`
+	}
+	//解析参数
+	if err := c.ShouldBind(&input); err != nil {
+		fmt.Println("请求参数解析失败:", err)
+		c.JSON(http.StatusOK, gin.H{"code": 0, "error": "请求参数错误"})
+		return
+	}
+	//校验参数
+	if input.Email == "" || input.Code == "" {
+		c.JSON(http.StatusOK, gin.H{"code": 0, "error": "邮箱或验证码不能为空"})
+		return
+	}
+	//查询用户是否已注册
+	user, err := services.GetUserByEmail(input.Email)
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"code":  0,
+			"error": "该邮箱未注册"},
+		)
+		return
+	}
+	//验证邮箱验证码
+	email := services.NewEmailVerificationService(services.EmailConfig{
+		From:      "rjl7@qq.com", // 改为小写
+		FromAlias: "EduSpark",
+		Password:  "nqwryufsseyxfaei",
+		Host:      "smtp.qq.com",
+		Port:      465, // 改为 SSL 端口
+	})
+	if !email.VerifyCode(input.Email, input.Code) {
+		c.JSON(http.StatusOK, gin.H{
+			"code":  0,
+			"error": "验证码验证失败.",
+		})
+	}
+	//验证成功，返回token
+	token, err := services.GenerateToken(uint(user.ID))
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"code":  0,
+			"error": "Token 生成失败",
+		})
+		return
+	}
+	fmt.Printf("Token 生成成功: %v\n", token)
+	c.JSON(http.StatusOK, gin.H{
+		"code":    1,
+		"token":   token,
+		"message": "登录成功",
+	})
+
+}
 func ResetPassword(c *gin.Context) {
 	// 解析请求 JSON
 	var input struct {
