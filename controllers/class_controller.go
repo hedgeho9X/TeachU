@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/Hedgeho9X/TeachU/models"
 	"github.com/Hedgeho9X/TeachU/services"
 	"github.com/gin-gonic/gin"
 )
@@ -190,15 +191,30 @@ func ImportStudents(c *gin.Context) {
 	}
 
 	// 遍历处理学生数据
+	// for _, student := range req.Students {
+	// 	// 实际业务逻辑示例：
+	// 	// 1. 创建学生记录，使用统一的 req.ClassID
+	// 	fmt.Printf(
+	// 		"创建学生: 学号=%d, 姓名=%s, 班级ID=%d\n",
+	// 		student.StudentNumber,
+	// 		student.StudentName,
+	// 		req.ClassID,
+	// 	)
+	// }
+	// 遍历处理学生数据
 	for _, student := range req.Students {
-		// 实际业务逻辑示例：
-		// 1. 创建学生记录，使用统一的 req.ClassID
-		fmt.Printf(
-			"创建学生: 学号=%d, 姓名=%s, 班级ID=%d\n",
-			student.StudentNumber,
-			student.StudentName,
-			req.ClassID,
-		)
+		// 调用service层创建学生
+		err := services.CreateStudent(req.ClassID, models.Student{
+			StudentNumber: strconv.Itoa(student.StudentNumber),
+			StudentName:   student.StudentName,
+		})
+		if err != nil {
+			c.JSON(http.StatusOK, gin.H{
+				"code": 0,
+				"msg":  fmt.Sprintf("创建学生失败: %v", err),
+			})
+			return
+		}
 	}
 
 	// 返回成功响应
