@@ -3,11 +3,13 @@ package controllers
 import (
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/Hedgeho9X/TeachU/services"
 	"github.com/gin-gonic/gin"
 )
 
+// ListClasses 获取班级列表
 func ListClasses(c *gin.Context) {
 	userIDInterface, _ := c.Get("userID")
 	userID, ok := userIDInterface.(uint)
@@ -81,11 +83,6 @@ func CreateClass(c *gin.Context) {
 	})
 }
 
-// // UpdateClass 更新班级信息
-// func UpdateClass(c *gin.Context) {
-// 	// TODO: 实现更新班级信息逻辑
-// }
-
 // DeleteClass 删除班级
 func DeleteClass(c *gin.Context) {
 	// 获取班级ID
@@ -97,7 +94,6 @@ func DeleteClass(c *gin.Context) {
 		})
 		return
 	}
-
 	// 获取当前用户ID（用于权限验证）
 	userIDInterface, _ := c.Get("userID")
 	userID, ok := userIDInterface.(uint)
@@ -121,5 +117,39 @@ func DeleteClass(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"code": 1,
 		"msg":  "删除班级成功",
+	})
+}
+
+func ListStudents(c *gin.Context) {
+	// 获取班级ID
+	classID := c.Query("class_id")
+	if classID == "" {
+		c.JSON(http.StatusOK, gin.H{
+			"code": 0,
+			"msg":  "班级ID不能为空",
+		})
+		return
+	}
+	//操作services.GetStudentsByClassID获取学生列表
+	classIDInt, err := strconv.Atoi(classID)
+	if err != nil || classIDInt < 0 {
+		c.JSON(http.StatusOK, gin.H{
+			"code": 0,
+			"msg":  "无效的班级ID",
+		})
+		return
+	}
+	students, err := services.GetStudentsByClassID(uint(classIDInt))
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"code": 0,
+			"msg":  "获取学生列表失败",
+		})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"code": 1,
+		"msg":  "获取学生列表成功",
+		"data": students,
 	})
 }

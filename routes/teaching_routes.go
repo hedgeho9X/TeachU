@@ -20,12 +20,11 @@ func RegisterTeachingRoutes(r *gin.Engine) {
 		class.DELETE("/delete/:id", controllers.DeleteClass) // 删除班级
 	}
 
-	// // 学生路由组
-	// student := r.Group("/students")
-	// student.Use(middlewares.JWTAuth())
-	// student.Use(middlewares.JWTAuth())
+	// 学生路由组
+	student := r.Group("/students")
+	student.Use(middlewares.JWTAuth())
 	// {
-	// 	student.GET("/list", controllers.ListStudents)            // 按班级查询学生
+	student.GET("/list/", controllers.ListStudents) // 按班级查询学生
 	// 	student.POST("/create", controllers.CreateStudent)        // 添加学生
 	// 	student.POST("/batch-import", controllers.ImportStudents) // 批量导入
 	// 	student.PUT("/update/:id", controllers.UpdateStudent)     // 更新学生信息
