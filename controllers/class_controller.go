@@ -153,3 +153,57 @@ func ListStudents(c *gin.Context) {
 		"data": students,
 	})
 }
+
+// 空接口接收前端文件
+func UploadFiles(c *gin.Context) {
+	file, _, err := c.Request.FormFile("file")
+	if err != nil {
+		c.String(http.StatusOK, fmt.Sprintf("上传文件失败: %v", err))
+		return
+	}
+	defer file.Close()
+	c.String(http.StatusOK, "文件上传并解析成功")
+}
+
+// 批量创建学生（json）
+func ImportStudents(c *gin.Context) {
+	// 定义请求体结构
+	type StudentInput struct {
+		StudentNumber int    `json:"student_number" binding:"required"`
+		StudentName   string `json:"student_name" binding:"required"`
+	}
+
+	type ImportRequest struct {
+		ClassID  uint           `json:"class_id" binding:"required"` // 统一传递 ClassID
+		Students []StudentInput `json:"students" binding:"required"` // 学生列表（无需重复 ClassID）
+	}
+
+	var req ImportRequest
+
+	// 绑定 JSON 数据
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"code":  0,
+			"error": "请求参数错误: " + err.Error(),
+		})
+		return
+	}
+
+	// 遍历处理学生数据
+	for _, student := range req.Students {
+		// 实际业务逻辑示例：
+		// 1. 创建学生记录，使用统一的 req.ClassID
+		fmt.Printf(
+			"创建学生: 学号=%d, 姓名=%s, 班级ID=%d\n",
+			student.StudentNumber,
+			student.StudentName,
+			req.ClassID,
+		)
+	}
+
+	// 返回成功响应
+	c.JSON(http.StatusOK, gin.H{
+		"code":    1,
+		"message": fmt.Sprintf("成功为班级 %d 添加 %d 名学生", req.ClassID, len(req.Students)),
+	})
+}

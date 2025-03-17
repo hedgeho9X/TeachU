@@ -1,6 +1,7 @@
 package services
 
 import (
+	"fmt"
 	"github.com/Hedgeho9X/TeachU/config"
 	"github.com/Hedgeho9X/TeachU/models"
 )
@@ -11,4 +12,18 @@ func GetStudentsByClassID(classID uint) ([]models.Student, error) {
 		return nil, err
 	}
 	return students, nil
+}
+func CreateStudent(classID uint, student models.Student) error {
+	var existingStudent models.Student
+	if err := config.DB.Where("student_number = ?", student.StudentNumber).First(&existingStudent).Error; err == nil {
+		return fmt.Errorf("学生已存在，学号: %d", student.StudentNumber)
+	}
+	student.ClassID = classID
+
+	// 创建学生记录
+	if err := config.DB.Create(&student).Error; err != nil {
+		return fmt.Errorf("创建学生失败: %v", err)
+	}
+
+	return nil
 }

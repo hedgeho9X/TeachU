@@ -24,10 +24,12 @@ func RegisterTeachingRoutes(r *gin.Engine) {
 	student := r.Group("/students")
 	student.Use(middlewares.JWTAuth())
 	// {
-	student.GET("/list/", controllers.ListStudents) // 按班级查询学生
+	student.GET("/list/", controllers.ListStudents)  // 按班级查询学生
+	student.POST("/upload", controllers.UploadFiles) //空接口接收前端文件
 	// 	student.POST("/create", controllers.CreateStudent)        // 添加学生
-	// 	student.POST("/batch-import", controllers.ImportStudents) // 批量导入
+	student.POST("/batch-import", controllers.ImportStudents) // 批量导入
 	// 	student.PUT("/update/:id", controllers.UpdateStudent)     // 更新学生信息
 	// 	student.DELETE("/delete/:id", controllers.DeleteStudent)  // 删除学生
 	// }
+	//接收文件
 }
