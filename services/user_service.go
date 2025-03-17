@@ -44,6 +44,14 @@ func CreateUser(user *models.User, plainPassword string) (*models.User, error) {
 	return user, nil
 }
 
+func GetUsernameByUserID(userID uint) (string, error) {
+	var user models.User
+	if err := config.DB.First(&user, userID).Error; err != nil {
+		return "", err
+	}
+	return user.Username, nil
+}
+
 // GetUserByPhoneNumber 根据手机号获取用户
 func GetUserByPhoneNumber(phoneNumber string) (*models.User, error) {
 	var user models.User

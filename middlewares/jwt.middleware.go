@@ -67,6 +67,7 @@ func JWTAuth() gin.HandlerFunc {
 		fmt.Printf("Token 验证成功，用户 ID: %d, 用户名: %s\n", claims.UserID, claims.Username)
 		c.Set("userID", claims.UserID)
 		c.Set("username", claims.Username)
+		c.Set("claims", claims) // 将整个 claims 对象存入 context
 		c.Next()
 	}
 }

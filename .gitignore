@@ -2,3 +2,4 @@ venv/
 .air.toml
 myenv/
 script/
+.VSCodeCounter

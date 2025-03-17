@@ -28,3 +28,25 @@ CREATE TABLE IF NOT EXISTS resources (
     INDEX idx_full_search (subject, grade, object_key),
     INDEX idx_object_key_full (object_key)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS classes (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,  -- 修改为 BIGINT UNSIGNED
+    class_number INT NOT NULL,
+    grade_level INT NOT NULL,
+    created_user_id BIGINT UNSIGNED NOT NULL,       -- 修改为 BIGINT UNSIGNED
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (created_user_id) REFERENCES users(id),
+    INDEX idx_class_number_grade (class_number, grade_level)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS students (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,  -- 修改为 BIGINT UNSIGNED
+    student_name VARCHAR(255) NOT NULL,
+    student_number VARCHAR(255) NOT NULL UNIQUE,
+    class_id BIGINT UNSIGNED NOT NULL,             -- 修改为 BIGINT UNSIGNED
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (class_id) REFERENCES classes(id),
+    INDEX idx_student_number (student_number)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

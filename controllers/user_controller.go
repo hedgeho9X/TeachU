@@ -137,6 +137,7 @@ func Register(c *gin.Context) {
 		)
 		return
 	}
+
 	userObj := &models.User{
 		PhoneNumber: input.PhoneNumber,
 		Username:    input.Username,

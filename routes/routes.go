@@ -2,45 +2,24 @@ package routes
 
 import (
 	"github.com/gin-gonic/gin"
-
-	"github.com/Hedgeho9X/TeachU/controllers"
-	"github.com/Hedgeho9X/TeachU/middlewares"
 )
 
+// SetupRouter 设置所有路由
 func SetupRouter() *gin.Engine {
 	r := gin.Default()
+	
+	// 基础路由
 	r.GET("/", func(c *gin.Context) {
 		c.JSON(200, gin.H{
 			"message": "Welcome to TeachU API",
 		})
 	})
 
-	//ai路由组
-	ai := r.Group("/ai")
-	ai.POST("/chat", controllers.Chat)
-	ai.POST("/ppt/generate", controllers.PptGenerate)
-	ai.GET("/ppt/progress", controllers.GetPPTProgress)
-	ai.GET("/ppt/list", controllers.GetPPtTemplates)
-	ai.POST("/pic/generate", controllers.PicGenerate)
-
-	//资源路由组
-	resource := r.Group("/resource")
-	resource.GET("/list", controllers.SearchResources)
-	resource.GET("/object", controllers.GetResource)
-
-	// 创建 auth 组
-	auth := r.Group("/auth")
-	// 公共路由：注册 & 登录 (放在 auth 组下，但不需要 JWT 验证)
-	auth.POST("/register", controllers.Register)
-	auth.POST("/login", controllers.Login)
-	auth.POST("/email2login", controllers.Email2Login)
-	auth.POST("/sendcode", controllers.SendCode)
-	auth.POST("/verifycode", controllers.VerifyCode)
-	auth.POST("/forgetpassword", controllers.ForgetPassword)
-	// 需要JWT验证的路由 (在 auth 组的子组中)
-	protected := auth.Group("")
-	protected.Use(middlewares.JWTAuth())
-	protected.POST("/resetpassword", controllers.ResetPassword)
+	// 注册各模块路由
+	RegisterAuthRoutes(r)
+	RegisterAIRoutes(r)
+	RegisterResourceRoutes(r)
+	RegisterTeachingRoutes(r)
 
 	return r
 }
