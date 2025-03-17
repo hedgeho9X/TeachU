@@ -9,12 +9,10 @@ import (
 )
 
 // GetClassesByUserID 获取用户创建的班级列表
-func GetClassesByUserID(userID uint) ([]models.Class, string, error) {
+func GetClassesByUserID(userID uint) ([]models.Class, error) {
 	var classes []models.Class
-	var user models.User
 	err := config.DB.Where("created_user_id = ?", userID).Find(&classes).Error
-	_ = config.DB.First(&user, userID).Error
-	return classes, user.Username, err
+	return classes, err
 }
 
 // CreateClassInput 创建班级的输入参数

@@ -19,7 +19,7 @@ func ListClasses(c *gin.Context) {
 		return
 	}
 	// 调用service层获取班级列表
-	classes, username, err := services.GetClassesByUserID(userID)
+	classes, err := services.GetClassesByUserID(userID)
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{
 			"code": 0,
@@ -27,6 +27,9 @@ func ListClasses(c *gin.Context) {
 		})
 		return
 	}
+
+	// 从上下文获取用户名
+	username, _ := c.Get("username")
 
 	c.JSON(http.StatusOK, gin.H{
 		"code":     1,

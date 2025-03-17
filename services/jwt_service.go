@@ -13,8 +13,13 @@ import (
 func GenerateToken(userID uint) (string, error) {
 	// fmt.Printf("正在为用户生成 Token: ID=%d, 用户名=%s\n", userID, username)
 
+	// 生成Token时补充用户信息
+	user, _ := GetUserByuserID(userID) // 需要实现该函数
 	claims := models.Claims{
-		UserID: userID,
+		UserID:      userID,
+		Username:    user.Username,
+		PhoneNumber: user.PhoneNumber, // 新增电话
+		Email:       user.Email,       // 新增邮箱
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(24 * time.Hour)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),

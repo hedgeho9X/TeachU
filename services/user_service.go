@@ -51,6 +51,14 @@ func GetUsernameByUserID(userID uint) (string, error) {
 	}
 	return user.Username, nil
 }
+func GetUserByuserID(userID uint) (*models.User, error) {
+	var user models.User
+	err := config.DB.Where("id =?", userID).First(&user).Error
+	if err != nil {
+		return nil, err
+	}
+	return &user, nil
+}
 
 // GetUserByPhoneNumber 根据手机号获取用户
 func GetUserByPhoneNumber(phoneNumber string) (*models.User, error) {

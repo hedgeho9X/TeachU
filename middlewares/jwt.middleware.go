@@ -63,11 +63,13 @@ func JWTAuth() gin.HandlerFunc {
 			return
 		}
 
-		// Token 验证成功，保存用户信息到上下文
-		fmt.Printf("Token 验证成功，用户 ID: %d, 用户名: %s\n", claims.UserID, claims.Username)
+		// Token验证成功后保存用户信息到上下文
+		fmt.Printf("Token 验证成功，用户 ID: %d,名称:%s, 电话: %s, 邮箱: %s\n", claims.UserID, claims.Username, claims.PhoneNumber, claims.Email)
 		c.Set("userID", claims.UserID)
 		c.Set("username", claims.Username)
-		c.Set("claims", claims) // 将整个 claims 对象存入 context
+		c.Set("phoneNumber", claims.PhoneNumber) // 新增电话
+		c.Set("email", claims.Email)             // 新增邮箱
+		c.Set("claims", claims)                  // 将整个 claims 对象存入 context
 		c.Next()
 	}
 }
