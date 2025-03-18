@@ -3,6 +3,7 @@ package controllers
 import (
 	"fmt"
 	"net/http"
+	"path/filepath"
 	"strconv"
 
 	"github.com/Hedgeho9X/TeachU/models"
@@ -12,29 +13,29 @@ import (
 
 // ListClasses 获取班级列表
 func ListClasses(c *gin.Context) {
-    userIDInterface, _ := c.Get("userID")
-    userID, ok := userIDInterface.(uint)
-    if !ok {
-        fmt.Printf("类型转换失败: userIDInterface=%v, type=%T\n", userIDInterface, userIDInterface)
-        c.JSON(http.StatusOK, gin.H{
-            "code": 0,
-            "msg":  "无效的用户ID",
-        })
-        return
-    }
-    fmt.Printf("正在查询用户ID=%d的班级列表\n", userID)
-    
-    // 调用service层获取班级列表
-    classes, err := services.GetClassesByUserID(userID)
-    if err != nil {
-        fmt.Printf("获取班级列表错误: %v\n", err)
-        c.JSON(http.StatusOK, gin.H{
-            "code": 0,
-            "msg":  "获取班级列表失败",
-        })
-        return
-    }
-    fmt.Printf("查询到的班级数量: %d\n", len(classes))
+	userIDInterface, _ := c.Get("userID")
+	userID, ok := userIDInterface.(uint)
+	if !ok {
+		fmt.Printf("类型转换失败: userIDInterface=%v, type=%T\n", userIDInterface, userIDInterface)
+		c.JSON(http.StatusOK, gin.H{
+			"code": 0,
+			"msg":  "无效的用户ID",
+		})
+		return
+	}
+	fmt.Printf("正在查询用户ID=%d的班级列表\n", userID)
+
+	// 调用service层获取班级列表
+	classes, err := services.GetClassesByUserID(userID)
+	if err != nil {
+		fmt.Printf("获取班级列表错误: %v\n", err)
+		c.JSON(http.StatusOK, gin.H{
+			"code": 0,
+			"msg":  "获取班级列表失败",
+		})
+		return
+	}
+	fmt.Printf("查询到的班级数量: %d\n", len(classes))
 
 	// 从上下文获取用户名
 	username, _ := c.Get("username")
@@ -162,13 +163,20 @@ func ListStudents(c *gin.Context) {
 
 // 空接口接收前端文件
 func UploadFiles(c *gin.Context) {
-	file, _, err := c.Request.FormFile("file")
+	file, header, err := c.Request.FormFile("file")
 	if err != nil {
-		c.String(http.StatusOK, fmt.Sprintf("上传文件失败: %v", err))
+		c.String(http.StatusBadRequest, fmt.Sprintf("文件上传失败: %s", err.Error()))
 		return
 	}
 	defer file.Close()
+	// 验证文件类型
+	ext := filepath.Ext(header.Filename)
+	if ext != ".csv" {
+		c.String(http.StatusOK, "只支持上传 CSV 文件")
+		return
+	}
 	c.String(http.StatusOK, "文件上传并解析成功")
+
 }
 
 // 批量创建学生（json）
