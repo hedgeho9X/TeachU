@@ -12,24 +12,29 @@ import (
 
 // ListClasses 获取班级列表
 func ListClasses(c *gin.Context) {
-	userIDInterface, _ := c.Get("userID")
-	userID, ok := userIDInterface.(uint)
-	if !ok {
-		c.JSON(http.StatusOK, gin.H{
-			"code": 0,
-			"msg":  "无效的用户ID",
-		})
-		return
-	}
-	// 调用service层获取班级列表
-	classes, err := services.GetClassesByUserID(userID)
-	if err != nil {
-		c.JSON(http.StatusOK, gin.H{
-			"code": 0,
-			"msg":  "获取班级列表失败",
-		})
-		return
-	}
+    userIDInterface, _ := c.Get("userID")
+    userID, ok := userIDInterface.(uint)
+    if !ok {
+        fmt.Printf("类型转换失败: userIDInterface=%v, type=%T\n", userIDInterface, userIDInterface)
+        c.JSON(http.StatusOK, gin.H{
+            "code": 0,
+            "msg":  "无效的用户ID",
+        })
+        return
+    }
+    fmt.Printf("正在查询用户ID=%d的班级列表\n", userID)
+    
+    // 调用service层获取班级列表
+    classes, err := services.GetClassesByUserID(userID)
+    if err != nil {
+        fmt.Printf("获取班级列表错误: %v\n", err)
+        c.JSON(http.StatusOK, gin.H{
+            "code": 0,
+            "msg":  "获取班级列表失败",
+        })
+        return
+    }
+    fmt.Printf("查询到的班级数量: %d\n", len(classes))
 
 	// 从上下文获取用户名
 	username, _ := c.Get("username")
