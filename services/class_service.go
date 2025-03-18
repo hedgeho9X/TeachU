@@ -55,13 +55,13 @@ func DeleteClass(classID string, userID uint) error {
 	}
 
 	// 检查班级是否还有学生
-	var studentCount int64
-	if err := config.DB.Model(&models.Student{}).Where("class_id = ?", classID).Count(&studentCount).Error; err != nil {
-		return err
-	}
-	if studentCount > 0 {
-		return errors.New("班级中还有学生，无法删除")
-	}
+	// var studentCount int64
+	// if err := config.DB.Model(&models.Student{}).Where("class_id = ?", classID).Count(&studentCount).Error; err != nil {
+	// 	return err
+	// }
+	// if studentCount > 0 {
+	// 	return errors.New("班级中还有学生，无法删除")
+	// }
 
 	// 开启事务
 	tx := config.DB.Begin()

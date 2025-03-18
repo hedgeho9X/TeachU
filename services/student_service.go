@@ -7,7 +7,7 @@ import (
 	"github.com/Hedgeho9X/TeachU/models"
 )
 
-func GetStudentsByClassID(classID uint) ([]models.Student, error) {
+func ListStudents(classID uint) ([]models.Student, error) {
 	var students []models.Student
 	if err := config.DB.Where("class_id =?", classID).Find(&students).Error; err != nil {
 		return nil, err
@@ -26,5 +26,15 @@ func CreateStudent(classID uint, student models.Student) error {
 		return fmt.Errorf("创建学生失败: %v", err)
 	}
 
+	return nil
+}
+func DeleteStudent(StudentNumber string) error {
+	var student models.Student
+	if err := config.DB.First(&student, StudentNumber).Error; err != nil {
+		return fmt.Errorf("学生不存在")
+	}
+	if err := config.DB.Delete(&student).Error; err != nil {
+		return fmt.Errorf("删除学生失败: %v", err)
+	}
 	return nil
 }

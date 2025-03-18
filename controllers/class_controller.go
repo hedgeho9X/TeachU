@@ -3,7 +3,6 @@ package controllers
 import (
 	"fmt"
 	"net/http"
-	"path/filepath"
 	"strconv"
 
 	"github.com/Hedgeho9X/TeachU/models"
@@ -137,7 +136,7 @@ func ListStudents(c *gin.Context) {
 		})
 		return
 	}
-	//操作services.GetStudentsByClassID获取学生列表
+	//操作services.ListStudents获取学生列表
 	classIDInt, err := strconv.Atoi(classID)
 	if err != nil || classIDInt < 0 {
 		c.JSON(http.StatusOK, gin.H{
@@ -146,7 +145,7 @@ func ListStudents(c *gin.Context) {
 		})
 		return
 	}
-	students, err := services.GetStudentsByClassID(uint(classIDInt))
+	students, err := services.ListStudents(uint(classIDInt))
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{
 			"code": 0,
@@ -159,24 +158,6 @@ func ListStudents(c *gin.Context) {
 		"msg":  "获取学生列表成功",
 		"data": students,
 	})
-}
-
-// 空接口接收前端文件
-func UploadFiles(c *gin.Context) {
-	file, header, err := c.Request.FormFile("file")
-	if err != nil {
-		c.String(http.StatusBadRequest, fmt.Sprintf("文件上传失败: %s", err.Error()))
-		return
-	}
-	defer file.Close()
-	// 验证文件类型
-	ext := filepath.Ext(header.Filename)
-	if ext != ".csv" {
-		c.String(http.StatusOK, "只支持上传 CSV 文件")
-		return
-	}
-	c.String(http.StatusOK, "文件上传并解析成功")
-
 }
 
 // 批量创建学生（json）
@@ -234,5 +215,28 @@ func ImportStudents(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"code":    1,
 		"message": fmt.Sprintf("成功为班级 %d 添加 %d 名学生", req.ClassID, len(req.Students)),
+	})
+}
+
+func DeleteStudent(c *gin.Context) {
+	StudentNumber := c.Param("student_number")
+	if StudentNumber == "" {
+		c.JSON(http.StatusOK, gin.H{
+			"code": 0,
+			"msg":  "学生ID不能为空",
+		})
+		return
+	}
+	// 调用service层删除学生
+	if err := services.DeleteStudent(StudentNumber); err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"code": 0,
+			"msg":  err.Error(),
+		})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"code": 1,
+		"msg":  "删除学生成功",
 	})
 }
