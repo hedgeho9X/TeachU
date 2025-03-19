@@ -127,6 +127,9 @@ func DeleteClass(c *gin.Context) {
 }
 
 func ListStudents(c *gin.Context) {
+	// 设置响应头
+	c.Header("Content-Type", "application/json")
+
 	// 获取班级ID
 	classID := c.Query("class_id")
 	if classID == "" {
