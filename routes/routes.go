@@ -18,6 +18,7 @@ func SetupRouter() *gin.Engine {
 	// 注册各模块路由
 	RegisterAuthRoutes(r)
 	RegisterExamRoutes(r)
+	RegisterProblemsRoutes(r)
 	RegisterAIRoutes(r)
 	RegisterResourceRoutes(r)
 	RegisterTeachingRoutes(r)

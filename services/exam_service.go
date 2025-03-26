@@ -138,6 +138,11 @@ func DeleteExam(examId string, userID uint) error {
 		tx.Rollback()
 		return fmt.Errorf("删除试题失败: %v", err)
 	}
+	//删除试题对应的问题
+	if err := tx.Unscoped().Delete(&models.Problems{}, examId).Error; err != nil {
+		tx.Rollback()
+		return fmt.Errorf("删除问题失败: %v", err)
+	}
 	return tx.Commit().Error
 }
 
