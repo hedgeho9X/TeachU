@@ -1,0 +1,251 @@
+package services
+
+import (
+	"context"
+	"encoding/base64"
+	"errors"
+	"fmt"
+	"os"
+
+	"github.com/Hedgeho9X/TeachU/config"
+	"github.com/Hedgeho9X/TeachU/models"
+	"github.com/volcengine/volcengine-go-sdk/service/arkruntime"
+	"github.com/volcengine/volcengine-go-sdk/service/arkruntime/model"
+	"github.com/volcengine/volcengine-go-sdk/volcengine"
+	"gorm.io/gorm"
+)
+
+// 解析base64编码
+func ImageToBase64(fileBytes []byte) (string, error) {
+	// 将字节数据直接编码为 Base64
+	base64String := base64.StdEncoding.EncodeToString(fileBytes)
+	return base64String, nil
+}
+
+// Ai解析文本
+func AIAnalyzeText(text string) (string, error) {
+	client := arkruntime.NewClientWithApiKey(
+		os.Getenv("ARK_API_KEY"),
+		arkruntime.WithBaseUrl("https://ark.cn-beijing.volces.com/api/v3"),
+	)
+
+	ctx := context.Background()
+
+	fmt.Println("----- standard request -----")
+	req := model.CreateChatCompletionRequest{
+		// 指定您创建的方舟推理接入点 ID，此处已帮您修改为您的推理接入点 ID
+		Model: "ep-20250311120726-h7xml",
+		Messages: []*model.ChatCompletionMessage{
+			{
+				Role: model.ChatMessageRoleSystem,
+				Content: &model.ChatCompletionMessageContent{
+					StringValue: volcengine.String("识别试卷 ，给出题号，题号对应的知识点，以及对应的题目内容的json，格式为{\n\"question_id\" :\"\",\n\"key\":\"\",\n\"content\":\" \",\n}-,Json数组格式发送，只保留json内容"),
+				},
+			},
+			{
+				Role: model.ChatMessageRoleUser,
+				Content: &model.ChatCompletionMessageContent{
+					StringValue: volcengine.String(text),
+				},
+			},
+		},
+	}
+
+	resp, err := client.CreateChatCompletion(ctx, req)
+	if err != nil {
+		fmt.Printf("standard chat error: %v\n", err)
+		return "", err
+	}
+	return *resp.Choices[0].Message.Content.StringValue, nil
+}
+
+// AI解析图片
+func AIAnalyzePic(base64String string) (string, error) {
+
+	client := arkruntime.NewClientWithApiKey(
+		// 从环境变量中获取您的 API Key。此为默认方式，您可根据需要进行修改
+		os.Getenv("ARK_API_KEY"),
+		// 此为默认路径，您可根据业务所在地域进行配置
+		arkruntime.WithBaseUrl("https://ark.cn-beijing.volces.com/api/v3"),
+	)
+	ctx := context.Background()
+	req := model.CreateChatCompletionRequest{
+		// 指定您创建的方舟推理接入点 ID，此处已帮您修改为您的推理接入点 ID
+		Model: "ep-20250323114418-qv2jv",
+		Messages: []*model.ChatCompletionMessage{
+			{
+				Role: model.ChatMessageRoleUser,
+				Content: &model.ChatCompletionMessageContent{
+					ListValue: []*model.ChatCompletionMessageContentPart{
+						{
+							Type: model.ChatCompletionMessageContentPartTypeText,
+							Text: AnalyzePrompt,
+						},
+						{
+							Type: model.ChatCompletionMessageContentPartTypeImageURL,
+							ImageURL: &model.ChatMessageImageURL{
+								URL: fmt.Sprintf("data:image/png;base64,%s", base64String),
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	resp, err := client.CreateChatCompletion(ctx, req)
+	if err != nil {
+		fmt.Printf("standard chat error: %v\n", err)
+		return "", err
+	}
+	return *resp.Choices[0].Message.Content.StringValue, nil
+
+}
+
+// 数据库存储Exam
+func CreateExam(exam *models.Exam) error {
+	// 检查班级是否存在
+	var class models.Class
+	if err := config.DB.First(&class, exam.ClassId).Error; err != nil {
+		return errors.New("班级不存在")
+	}
+	// 检查用户是否为班级创建者
+	if exam.UserId != class.CreatedUserID {
+		return errors.New("您不是班级创建者，无法创建试题")
+	}
+	return config.DB.Create(exam).Error
+}
+
+// DeleteExamAndRelatedData 级联删除考试及相关数据
+func DeleteExam(examId string, userID uint) error {
+	var exam models.Exam
+
+	// 查找班级是否存在
+	if err := config.DB.First(&exam, examId).Error; err != nil {
+		return errors.New("试题不存在")
+	}
+
+	// 验证是否为班级创建者
+	if exam.UserId != userID {
+		return errors.New("无权删除该试题")
+	}
+
+	// 开启事务
+	tx := config.DB.Begin()
+
+	// 删除试题（直接通过主ID删除）
+	if err := tx.Unscoped().Delete(&models.Exam{}, examId).Error; err != nil {
+		tx.Rollback()
+		return fmt.Errorf("删除试题失败: %v", err)
+	}
+	return tx.Commit().Error
+}
+
+func GetExamByID(db *gorm.DB, id string) (*models.Exam, error) {
+	var exam models.Exam
+	result := db.First(&exam, "id = ?", id)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	return &exam, nil
+}
+
+func ListExamByClassID(classID uint, userID uint) ([]models.Exam, error) {
+	var exams []models.Exam
+	// 检查班级是否存在
+	var class models.Class
+	if err := config.DB.First(&class, classID).Error; err != nil {
+		return nil, errors.New("班级不存在")
+	}
+	// 检查用户是否为班级创建者
+	if userID != class.CreatedUserID {
+		return nil, errors.New("您不是班级创建者，无法查看考试")
+	}
+	// 查询班级下的所有考试
+	result := config.DB.Where("class_id =?", classID).Find(&exams)
+	if result.Error != nil {
+		return nil, result.Error
+	}
+	return exams, nil
+}
+
+// // processUploadedFile 处理文件解析
+// func ProcessUploadedFile(file *multipart.FileHeader) (string, error) {
+// 	// 直接打开上传文件
+// 	src, err := file.Open()
+// 	if err != nil {
+// 		return "", err
+// 	}
+// 	defer src.Close()
+
+// 	// 读取文件内容到内存
+// 	fileBytes, err := io.ReadAll(src)
+// 	if err != nil {
+// 		return "", fmt.Errorf("读取文件失败: %w", err)
+// 	}
+
+// 	// 直接解析内存中的内容
+// 	content, err := parseWordContentFromMemory(fileBytes)
+// 	if err != nil {
+// 		return "", fmt.Errorf("内容解析失败: %w", err)
+// 	}
+
+// 	return content, nil
+// }
+
+// // parseWordContentFromMemory 直接从内存解析Word内容
+// func parseWordContentFromMemory(fileBytes []byte) (string, error) {
+// 	reader := bytes.NewReader(fileBytes)
+// 	zipReader, err := zip.NewReader(reader, int64(len(fileBytes)))
+// 	if err != nil {
+// 		return "", fmt.Errorf("ZIP文件解析失败: %w", err)
+// 	}
+
+// 	var content string
+// 	found := false
+
+// 	for _, f := range zipReader.File {
+// 		if f.Name == "word/document.xml" {
+// 			found = true
+// 			rc, err := f.Open()
+// 			if err != nil {
+// 				return "", fmt.Errorf("XML文件打开失败: %w", err)
+// 			}
+// 			defer rc.Close()
+
+// 			xmlData, err := io.ReadAll(rc)
+// 			if err != nil {
+// 				return "", fmt.Errorf("XML内容读取失败: %w", err)
+// 			}
+
+// 			doc := etree.NewDocument()
+// 			if err := doc.ReadFromBytes(xmlData); err != nil {
+// 				return "", fmt.Errorf("XML解析失败: %w", err)
+// 			}
+
+// 			// 处理命名空间
+// 			ns := "{http://schemas.openxmlformats.org/wordprocessingml/2006/main}"
+// 			for _, t := range doc.FindElements("//" + ns + "t") {
+// 				if text := strings.TrimSpace(t.Text()); text != "" {
+// 					content += text + "\n"
+// 				}
+// 			}
+// 		}
+// 	}
+
+// 	if !found {
+// 		return "", errors.New("未找到word/document.xml文件")
+// 	}
+// 	return content, nil
+// }
+
+// func ProcessWordFile(file *multipart.FileHeader) (string, error) {
+// 	content, err := ProcessUploadedFile(file)
+// 	if err != nil {
+// 		return "", fmt.Errorf("Word内容解析失败: %w", err)
+// 	}
+// 	if content == "" {
+// 		return "", errors.New("文档内容为空")
+// 	}
+// 	return content, nil
+// }

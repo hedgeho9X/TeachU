@@ -1,5 +1,4 @@
-// bytedance ai模版
-// package main
+package hhh
 
 import (
 	"context"
@@ -13,7 +12,7 @@ import (
 )
 
 // main 函数是程序的入口点
-func main() {
+func 1() {
 	// 替换为您的推理接入点ID（https://www.volcengine.com/docs/82379/1099522）
 	const Model = "ep-20250311120726-h7xml"
 	// 使用 API Key创建一个客户端，从环境变量中获取 API Key（https://www.volcengine.com/docs/82379/1361424）

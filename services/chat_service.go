@@ -4,8 +4,12 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"os"
 
 	ark "github.com/sashabaranov/go-openai"
+	"github.com/volcengine/volcengine-go-sdk/service/arkruntime"
+	"github.com/volcengine/volcengine-go-sdk/service/arkruntime/model"
+	"github.com/volcengine/volcengine-go-sdk/volcengine"
 )
 
 type StreamChunk struct {
@@ -78,7 +82,6 @@ func GetAIStream(ctx context.Context, message string) <-chan StreamChunk {
 				// 提取响应中的内容
 				content := resp.Choices[0].Delta.Content
 				fmt.Printf("[服务层] 收到内容: %s\n", content)
-
 				// 使用select处理数据发送和上下文取消
 				select {
 				case <-ctx.Done():
@@ -93,4 +96,41 @@ func GetAIStream(ctx context.Context, message string) <-chan StreamChunk {
 
 	// 返回只读通道
 	return ch
+}
+
+func Chat(text string, Model string, prompt string) (string, error) {
+	client := arkruntime.NewClientWithApiKey(
+		os.Getenv("ARK_API_KEY"),
+		arkruntime.WithBaseUrl("https://ark.cn-beijing.volces.com/api/v3"),
+	)
+
+	ctx := context.Background()
+
+	fmt.Println("----- standard request -----")
+	req := model.CreateChatCompletionRequest{
+		// 指定您创建的方舟推理接入点 ID，此处已帮您修改为您的推理接入点 ID
+		// Model: "ep-20250311120726-h7xml",
+		Model: Model,
+		Messages: []*model.ChatCompletionMessage{
+			{
+				Role: model.ChatMessageRoleSystem,
+				Content: &model.ChatCompletionMessageContent{
+					StringValue: volcengine.String(prompt),
+				},
+			},
+			{
+				Role: model.ChatMessageRoleUser,
+				Content: &model.ChatCompletionMessageContent{
+					StringValue: volcengine.String(text),
+				},
+			},
+		},
+	}
+
+	resp, err := client.CreateChatCompletion(ctx, req)
+	if err != nil {
+		fmt.Printf("standard chat error: %v\n", err)
+		return "", err
+	}
+	return *resp.Choices[0].Message.Content.StringValue, nil
 }
