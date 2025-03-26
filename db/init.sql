@@ -70,6 +70,7 @@ CREATE TABLE IF NOT EXISTS problems (
     keypoint VARCHAR(255) NOT NULL,            -- 知识点
     questions_number INT NOT NULL,             -- 题号
     total_score DECIMAL(5,2) NOT NULL,         -- 总分值
+    content     TEXT NOT NULL,                  -- 题目内容
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     deleted_at TIMESTAMP NULL,                 -- 软删除字段
