@@ -1,21 +1,22 @@
 package controllers
 
 import (
+	"net/http"
+
 	"github.com/Hedgeho9X/TeachU/models"
 	"github.com/Hedgeho9X/TeachU/services"
 	"github.com/gin-gonic/gin"
-	"net/http"
 )
 
 func CreatProblem(c *gin.Context) {
 	var input struct {
-		ExamId          uint    `form:"examid" binding:"required"`
-		Keypoint        string  `form:"keypoint" binding:"required"`
-		QuestionsNumber uint    `form:"question_number" binding:"required"`
-		TotalScore      float64 `form:"total_score" binding:"required"`
-		Content         string  `form:"content" binding:"required"`
+		ExamId          uint    `json:"exam_id" binding:"required"`
+		Keypoint        string  `json:"keypoint" binding:"required"`
+		QuestionsNumber uint    `json:"question_number" binding:"required"`
+		TotalScore      float64 `json:"total_score" binding:"required"`
+		Content         string  `json:"content" binding:"required"`
 	}
-	if err := c.ShouldBind(&input); err != nil {
+	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusOK, gin.H{
 			"code":  0,
 			"error": "参数错误:" + err.Error(),
@@ -34,6 +35,7 @@ func CreatProblem(c *gin.Context) {
 			"code":  0,
 			"error": "数据库保存失败:" + err.Error(),
 		})
+		return
 	}
 	c.JSON(http.StatusOK, gin.H{
 		"code":    1,

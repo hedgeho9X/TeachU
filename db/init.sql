@@ -61,7 +61,7 @@ CREATE TABLE IF NOT EXISTS exams (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     deleted_at TIMESTAMP NULL,         -- 添加软删除字段
-    FOREIGN KEY (created_user_id) REFERENCES users(id),
+    FOREIGN KEY (created_user_id) REFERENCES users(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS problems (
@@ -75,8 +75,8 @@ CREATE TABLE IF NOT EXISTS problems (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     deleted_at TIMESTAMP NULL,                 -- 软删除字段
     FOREIGN KEY (exam_id) REFERENCES exams(id),
-    INDEX idx_exam_id (exam_id),               -- 添加索引提高查询性能
-    INDEX idx_deleted_at (deleted_at)          -- 软删除索引
+    INDEX idx_exam_id (exam_id) ,             -- 添加索引提高查询性能
+    INDEX idx_deleted_at (deleted_at)         -- 软删除索引
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS scores (
@@ -89,7 +89,7 @@ CREATE TABLE IF NOT EXISTS scores (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     deleted_at TIMESTAMP NULL,                 -- 软删除字段
     FOREIGN KEY (student_id) REFERENCES students(id),
-    FOREIGN KEY (exam_id) REFERENCES exams(id),
-    INDEX idx_student_exam (student_id, exam_id),  -- 联合索引
+    FOREIGN KEY (exam_id) REFERENCES exams(id)
+,    INDEX idx_student_exam (student_id, exam_id)  ,-- 联合索引
     INDEX idx_deleted_at (deleted_at)              -- 软删除索引
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
