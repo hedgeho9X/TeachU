@@ -63,3 +63,32 @@ CREATE TABLE IF NOT EXISTS exams (
     deleted_at TIMESTAMP NULL,         -- 添加软删除字段
     FOREIGN KEY (created_user_id) REFERENCES users(id),
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS problems (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    exam_id BIGINT UNSIGNED NOT NULL,          -- 关联的考试ID
+    keypoint VARCHAR(255) NOT NULL,            -- 知识点
+    questions_number INT NOT NULL,             -- 题号
+    total_score DECIMAL(5,2) NOT NULL,         -- 总分值
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP NULL,                 -- 软删除字段
+    FOREIGN KEY (exam_id) REFERENCES exams(id),
+    INDEX idx_exam_id (exam_id),               -- 添加索引提高查询性能
+    INDEX idx_deleted_at (deleted_at)          -- 软删除索引
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS scores (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    student_id BIGINT UNSIGNED NOT NULL,       -- 关联的学生ID
+    exam_id BIGINT UNSIGNED NOT NULL,          -- 关联的考试ID
+    question_number INT NOT NULL,              -- 题号
+    score DECIMAL(5,2) NOT NULL,               -- 得分
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP NULL,                 -- 软删除字段
+    FOREIGN KEY (student_id) REFERENCES students(id),
+    FOREIGN KEY (exam_id) REFERENCES exams(id),
+    INDEX idx_student_exam (student_id, exam_id),  -- 联合索引
+    INDEX idx_deleted_at (deleted_at)              -- 软删除索引
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
