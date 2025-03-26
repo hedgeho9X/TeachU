@@ -90,6 +90,6 @@ CREATE TABLE IF NOT EXISTS scores (
     deleted_at TIMESTAMP NULL,                 -- 软删除字段
     FOREIGN KEY (student_id) REFERENCES students(id),
     FOREIGN KEY (exam_id) REFERENCES exams(id)
-,    INDEX idx_student_exam (student_id, exam_id)  ,-- 联合索引
+,   INDEX idx_student_exam (student_id, exam_id)  ,-- 联合索引
     INDEX idx_deleted_at (deleted_at)              -- 软删除索引
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

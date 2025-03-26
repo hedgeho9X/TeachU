@@ -1,11 +1,12 @@
 package models
 
 type Exam struct {
-	ID       uint   `gorm:"primaryKey;column:id" json:"id"` // 确保主键定义
-	UserId   uint   `json:"created_user_id"`
-	ClassId  uint   `json:"class_id"`
-	ExamName string `json:"exam_name"`
-	Subject  string `json:"subject"`
+	ID        uint   `gorm:"primaryKey;column:id" json:"id"` // 确保主键定义
+	UserId    uint   `json:"created_user_id"`
+	ClassId   uint   `json:"class_id"`
+	ExamName  string `json:"exam_name"`
+	Subject   string `json:"subject"`
+	createdAt string `gorm:"column:created_at"`
 	// DeletedAt gorm.DeletedAt `gorm:"index"`
 }
 
