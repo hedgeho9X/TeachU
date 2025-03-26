@@ -162,7 +162,7 @@ func DeleteExam(c *gin.Context) {
 }
 func ListExam(c *gin.Context) {
 	// 获取当前用户ID（用于权限验证）
-	classID := c.Param("class_id")
+	classID := c.Query("class_id")
 	if classID == "" {
 		c.JSON(http.StatusOK, gin.H{
 			"code": 0,

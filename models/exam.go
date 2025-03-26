@@ -1,14 +1,11 @@
 package models
 
-import "gorm.io/gorm"
-
 type Exam struct {
-	gorm.Model
-	Id       uint   `gorm:"primaryKey;column:id"`
-	UserId   uint   `gorm:"not null;column:created_user_id"`
-	ClassId  uint   `gorm:"not null;column:class_id"`
-	ExamName string `gorm:"not null;column:exam_name"` // 试题名称
-	Subject  string `gorm:"not null;column:subject"`   // 科目
+	ID       uint   `gorm:"primaryKey;column:id" json:"id"` // 确保主键定义
+	UserId   uint   `json:"created_user_id"`
+	ClassId  uint   `json:"class_id"`
+	ExamName string `json:"exam_name"`
+	Subject  string `json:"subject"`
 	// DeletedAt gorm.DeletedAt `gorm:"index"`
 }
 
