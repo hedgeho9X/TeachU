@@ -8,13 +8,17 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+type ProblemDetail struct {
+	Keypoint        string  `json:"keypoint" binding:"required"`
+	QuestionsNumber uint    `json:"question_number" binding:"required"`
+	TotalScore      float64 `json:"total_score" binding:"required"`
+	Content         string  `json:"content" binding:"required"`
+}
+
 func CreatProblem(c *gin.Context) {
 	var input struct {
-		ExamId          uint    `json:"exam_id" binding:"required"`
-		Keypoint        string  `json:"keypoint" binding:"required"`
-		QuestionsNumber uint    `json:"question_number" binding:"required"`
-		TotalScore      float64 `json:"total_score" binding:"required"`
-		Content         string  `json:"content" binding:"required"`
+		ExamId   uint            `json:"exam_id" binding:"required"`
+		Problems []ProblemDetail `json:"problems" binding:"required,dive"`
 	}
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusOK, gin.H{
@@ -23,12 +27,22 @@ func CreatProblem(c *gin.Context) {
 		})
 		return
 	}
-	problems := &models.Problems{
-		ExamId:          input.ExamId,
-		Keypoint:        input.Keypoint,
-		QuestionsNumber: input.QuestionsNumber,
-		TotalScore:      input.TotalScore,
-		Content:         input.Content,
+	var problems []models.Problems
+	for _, detail := range input.Problems {
+		problems = append(problems, models.Problems{
+			ExamId:          input.ExamId,
+			Keypoint:        detail.Keypoint,
+			QuestionsNumber: detail.QuestionsNumber,
+			TotalScore:      detail.TotalScore,
+			Content:         detail.Content,
+		})
+		if detail.Keypoint == "" || detail.QuestionsNumber == 0 || detail.TotalScore == 0 || detail.Content == "" {
+			c.JSON(http.StatusOK, gin.H{
+				"code": 0,
+				"msg":  "传入内容含空信息",
+			})
+			return
+		}
 	}
 	if err := services.CreatProblems(problems); err != nil {
 		c.JSON(http.StatusOK, gin.H{
@@ -41,12 +55,8 @@ func CreatProblem(c *gin.Context) {
 		"code":    1,
 		"message": "上传成功",
 		"data": gin.H{
-			"id":              problems.Id,
-			"ExamId":          problems.ExamId,
-			"Keypoint":        problems.Keypoint,
-			"QuestionsNumber": problems.QuestionsNumber,
-			"TotalScore":      problems.TotalScore,
-			"Content":         problems.Content,
+			"id":       input.ExamId,
+			"problems": problems,
 		},
 	})
 }
