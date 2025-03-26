@@ -24,4 +24,5 @@ func RegisterAIRoutes(r *gin.Engine) {
 
 	// 图片生成接口
 	ai.POST("/pic/generate", controllers.PicGenerate)
+	ai.GET("/recommend", controllers.GetRecommmend)
 }

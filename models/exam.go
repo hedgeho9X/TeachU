@@ -1,13 +1,16 @@
 package models
 
+import "time"
+
 type Exam struct {
-	ID        uint   `gorm:"primaryKey;column:id" json:"id"` // 确保主键定义
-	UserId    uint   `json:"created_user_id"`
-	ClassId   uint   `json:"class_id"`
-	ExamName  string `json:"exam_name"`
-	Subject   string `json:"subject"`
-	CreatedAt string `gorm:"column:created_at"`
-	// DeletedAt gorm.DeletedAt `gorm:"index"`
+	ID        uint      `gorm:"primaryKey;column:id" json:"id"`
+	UserId    uint      `json:"created_user_id"`
+	ClassId   uint      `json:"class_id"`
+	ExamName  string    `json:"exam_name"`
+	Subject   string    `json:"subject"`
+	CreatedAt time.Time `gorm:"column:created_at" json:"created_at"`
+	UpdatedAt time.Time `gorm:"column:updated_at" json:"updated_at"`
+	DeletedAt time.Time `gorm:"column:deleted_at" json:"deleted_at,omitempty"`
 }
 
 // TableName 指定表名为 exams

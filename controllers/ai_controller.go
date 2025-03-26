@@ -3,8 +3,10 @@ package controllers
 import (
 	"context"
 	"fmt"
+	"math/rand"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/Hedgeho9X/TeachU/config"
 	"github.com/Hedgeho9X/TeachU/services"
@@ -312,5 +314,33 @@ func PicGenerate(c *gin.Context) {
 		"code": 1,
 		"msg":  "图像生成成功",
 		"data": pics,
+	})
+}
+
+// 返回随机的6个主题
+func GetRecommmend(c *gin.Context) {
+	// 将所有主题放入一个切片
+	var allTopics []string
+	for _, topics := range services.Subjects {
+		allTopics = append(allTopics, topics...)
+	}
+
+	// 打乱顺序
+	rand.Seed(time.Now().UnixNano())
+	rand.Shuffle(len(allTopics), func(i, j int) {
+		allTopics[i], allTopics[j] = allTopics[j], allTopics[i]
+	})
+
+	// 取前6个
+	var result []string
+	if len(allTopics) >= 6 {
+		result = allTopics[:6]
+	} else {
+		result = allTopics
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"code": 1,
+		"msg":  "获取推荐主题成功",
+		"data": result,
 	})
 }
