@@ -34,7 +34,7 @@ func CreateExam(c *gin.Context) {
 	}
 	input.UserId = userID
 	if err := c.ShouldBind(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
+		c.JSON(http.StatusOK, gin.H{
 			"code":  0,
 			"error": "参数错误: " + err.Error(),
 		})
@@ -42,13 +42,13 @@ func CreateExam(c *gin.Context) {
 	}
 	// 验证文件大小和类型
 	if input.File.Size > 10<<20 {
-		c.JSON(http.StatusBadRequest, gin.H{"code": 0, "error": "文件大小超过限制"})
+		c.JSON(http.StatusOK, gin.H{"code": 0, "error": "文件大小超过限制"})
 		return
 	}
 
 	ext := filepath.Ext(input.File.Filename)
 	if ext != ".docx" && ext != ".jpg" && ext != ".png" {
-		c.JSON(http.StatusBadRequest, gin.H{"code": 0, "error": "仅支持.docx文件或jpg/png图片格式"})
+		c.JSON(http.StatusOK, gin.H{"code": 0, "error": "仅支持.docx文件或jpg/png图片格式"})
 		return
 	}
 
@@ -61,7 +61,7 @@ func CreateExam(c *gin.Context) {
 		// 使用docconv解析Word文档
 		file, err := input.File.Open()
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{
+			c.JSON(http.StatusOK, gin.H{
 				"code":  0,
 				"error": fmt.Sprintf("文件打开失败: %v", err),
 			})
@@ -71,7 +71,7 @@ func CreateExam(c *gin.Context) {
 
 		response, err := docconv.Convert(file, "application/vnd.openxmlformats-officedocument.wordprocessingml.document", true)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{
+			c.JSON(http.StatusOK, gin.H{
 				"code":  0,
 				"error": fmt.Sprintf("文档解析失败: %v", err),
 			})
@@ -83,19 +83,19 @@ func CreateExam(c *gin.Context) {
 		pic, _ := input.File.Open()
 		FileBytes, err := io.ReadAll(pic)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"code": 0, "error": "文件打开失败: " + err.Error()})
+			c.JSON(http.StatusOK, gin.H{"code": 0, "error": "文件打开失败: " + err.Error()})
 			return
 		}
 		baseContent, err := services.ImageToBase64(FileBytes)
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"code": 0, "error": "base64转换失败: " + err.Error()})
+			c.JSON(http.StatusOK, gin.H{"code": 0, "error": "base64转换失败: " + err.Error()})
 			return
 		}
 		keyPoint, err = services.AIAnalyzePic(baseContent)
 	}
 
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"code": 0, "error": "内容解析失败: " + err.Error()})
+		c.JSON(http.StatusOK, gin.H{"code": 0, "error": "内容解析失败: " + err.Error()})
 		return
 	}
 
@@ -108,7 +108,7 @@ func CreateExam(c *gin.Context) {
 	}
 
 	if err := services.CreateExam(&exam); err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"code": 0, "error": "数据库保存失败: " + err.Error()})
+		c.JSON(http.StatusOK, gin.H{"code": 0, "error": "数据库保存失败: " + err.Error()})
 		return
 	}
 
@@ -129,7 +129,7 @@ func CreateExam(c *gin.Context) {
 func DeleteExam(c *gin.Context) {
 	examId := c.Param("id")
 	if examId == "" {
-		c.JSON(http.StatusBadRequest, gin.H{
+		c.JSON(http.StatusOK, gin.H{
 			"code": 0,
 			"msg":  "试题ID不能为空",
 		})
@@ -164,7 +164,7 @@ func ListExam(c *gin.Context) {
 	// 获取当前用户ID（用于权限验证）
 	classID := c.Param("class_id")
 	if classID == "" {
-		c.JSON(http.StatusBadRequest, gin.H{
+		c.JSON(http.StatusOK, gin.H{
 			"code": 0,
 			"msg":  "班级ID不能为空",
 		})
@@ -183,7 +183,7 @@ func ListExam(c *gin.Context) {
 	// 将字符串类型的classID转换为uint类型
 	classIDUint, err := strconv.ParseUint(classID, 10, 32)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
+		c.JSON(http.StatusOK, gin.H{
 			"code": 0,
 			"msg":  "无效的班级ID格式",
 		})

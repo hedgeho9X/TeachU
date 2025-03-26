@@ -60,6 +60,6 @@ CREATE TABLE IF NOT EXISTS exams (
     subject VARCHAR(50) NOT NULL,      -- 科目
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP NULL,         -- 添加软删除字段
     FOREIGN KEY (created_user_id) REFERENCES users(id),
-    FOREIGN KEY (class_id) REFERENCES classes(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
