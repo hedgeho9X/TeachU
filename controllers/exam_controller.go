@@ -16,11 +16,11 @@ import (
 
 func CreateExam(c *gin.Context) {
 	var input struct {
-		UserId  uint                  `json:"user_id"`
-		Name    string                `form:"name" binding:"required"`
-		Subject string                `form:"subject" binding:"required"`
-		File    *multipart.FileHeader `form:"file" binding:"required"`
-		ClassId uint                  `form:"class_id" binding:"required"`
+		CreatedUserID uint                  `form:"created_user_id"` // 修改字段名
+		Name          string                `form:"name" binding:"required"`
+		Subject       string                `form:"subject" binding:"required"`
+		File          *multipart.FileHeader `form:"file" binding:"required"`
+		ClassId       uint                  `form:"class_id" binding:"required"`
 	}
 	userIDInterface, _ := c.Get("userID")
 	userID, ok := userIDInterface.(uint)
@@ -32,7 +32,7 @@ func CreateExam(c *gin.Context) {
 		})
 		return
 	}
-	input.UserId = userID
+	input.CreatedUserID = userID
 	if err := c.ShouldBind(&input); err != nil {
 		c.JSON(http.StatusOK, gin.H{
 			"code":  0,
@@ -101,7 +101,7 @@ func CreateExam(c *gin.Context) {
 
 	// 创建并保存试题
 	exam := models.Exam{
-		UserId:   input.UserId,
+		UserId:   input.CreatedUserID, // 修改字段名
 		ExamName: input.Name,
 		Subject:  input.Subject,
 		ClassId:  input.ClassId,
@@ -117,11 +117,11 @@ func CreateExam(c *gin.Context) {
 		"code":    1,
 		"message": "上传成功",
 		"data": gin.H{
-			"userid":   exam.UserId,
-			"id":       exam.ID,
-			"name":     exam.ExamName,
-			"subject":  exam.Subject,
-			"KeyPoint": keyPoint,
+			"created_user_id": exam.UserId, // 修改字段名
+			"id":              exam.ID,
+			"name":            exam.ExamName,
+			"subject":         exam.Subject,
+			"KeyPoint":        keyPoint,
 		},
 	})
 }
