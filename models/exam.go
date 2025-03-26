@@ -6,7 +6,7 @@ type Exam struct {
 	ClassId   uint   `json:"class_id"`
 	ExamName  string `json:"exam_name"`
 	Subject   string `json:"subject"`
-	createdAt string `gorm:"column:created_at"`
+	CreatedAt string `gorm:"column:created_at"`
 	// DeletedAt gorm.DeletedAt `gorm:"index"`
 }
 
