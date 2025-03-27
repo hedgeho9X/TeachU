@@ -21,7 +21,7 @@ func GenerateToken(userID uint) (string, error) {
 		PhoneNumber: user.PhoneNumber, // 新增电话
 		Email:       user.Email,       // 新增邮箱
 		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(24 * time.Hour)),
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(7 * 24 * time.Hour)),
 			IssuedAt:  jwt.NewNumericDate(time.Now()),
 			NotBefore: jwt.NewNumericDate(time.Now()),
 			Issuer:    "TeachU",
