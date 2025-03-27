@@ -31,14 +31,14 @@ func CreateScores(examID uint, scores []models.ScoreInput) (int, error) {
 			tx.Rollback()
 			return 0, fmt.Errorf("考试ID%d不存在", examID)
 		}
-		// 验证考试是否属于当前学生
+		// 遍历试题并创建成绩记录
 		for _, q := range s.Questions {
 			// 验证试题是否存在
-			// var question models.Problems
-			// if err := tx.Where("questions_number = ? AND exam_id = ?", q.QuestionNumber, examID).First(&question, q.QuestionNumber).Error; err != nil {
-			// 	tx.Rollback()
-			// 	return 0, fmt.Errorf("本次考试中试题号%d不存在", q.QuestionNumber)
-			// }
+			var question models.Problems
+			if err := tx.Where("questions_number = ? AND exam_id = ?", q.QuestionNumber, examID).First(&question, q.QuestionNumber).Error; err != nil {
+				tx.Rollback()
+				return 0, fmt.Errorf("本次考试中试题号%d不存在", q.QuestionNumber)
+			}
 			// // 验证试题是否属于当前考试
 
 			// 创建成绩记录
