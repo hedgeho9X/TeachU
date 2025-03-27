@@ -16,5 +16,7 @@ func RegisterExamRoutes(r *gin.Engine) {
 	exam.POST("/create", controllers.CreateExam)
 	exam.DELETE("/delete/:id", controllers.DeleteExam)
 	exam.GET("/list", controllers.ListExam)
-	exam.POST("/upload-score", controllers.UploadScore)
+	score := r.Group("/exam/score")
+	score.POST("/upload", controllers.UploadScore)
+	score.GET("/list", controllers.ListScore)
 }

@@ -21,7 +21,7 @@ func UploadScore(c *gin.Context) {
 		ExamID uint `json:"exam_id" binding:"required"`
 		Scores []struct {
 			StudentNumber  string  `json:"student_number" binding:"required"`
-			StudentName    string  `json:"student_name"`
+			StudentName    string  `json:"student_name" binding:"required"`
 			QuestionNumber int     `json:"question_id" binding:"required"`
 			Score          float64 `json:"score" binding:"required,gte=0"`
 		} `json:"scores" binding:"required"`
@@ -72,35 +72,35 @@ func UploadScore(c *gin.Context) {
 }
 
 func ListScore(c *gin.Context) {
-	examID := c.Query("exam_id")
-	if examID == "" {
+	examIDstr := c.Query("exam_id")
+	if examIDstr == "" {
 		c.JSON(http.StatusOK, gin.H{
 			"code": "0",
 			"msg":  "exam_id不能为空",
 		})
 		return
-
-		ExamIDUint, err := strconv.ParseUint(examID, 10, 64)
-		if err != nil {
-			c.JSON(http.StatusOK, gin.H{
-				"code": "0",
-				"msg":  "exam_id必须为数字",
-			})
-			return
-		}
 	}
-	scores, err := services.ListScores(uint(ExamIDUint))
+	examIdUint, err := strconv.ParseUint(examIDstr, 10, 64)
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"code": "0",
+			"msg":  "exam_id必须为数字",
+		})
+		return
+	}
+
+	scores, err := services.ListScores(uint(examIdUint))
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{
 			"code": "0",
 			"msg":  err.Error(),
 		})
 		return
-		c.JSON(http.StatusOK, gin.H{
-			"code": "1",
-			"msg":  "获取成绩成功",
-			"data": scores,
-		})
 	}
 
+	c.JSON(http.StatusOK, gin.H{
+		"code": "1",
+		"msg":  "获取成绩成功",
+		"data": scores,
+	})
 }
