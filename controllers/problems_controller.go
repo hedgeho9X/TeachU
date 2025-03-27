@@ -10,7 +10,7 @@ import (
 
 type ProblemDetail struct {
 	Keypoint        string  `json:"keypoint" binding:"required"`
-	QuestionsNumber uint    `json:"question_number" binding:"required"`
+	QuestionsNumber uint    `json:"questions_number" binding:"required"`
 	TotalScore      float64 `json:"total_score" binding:"required"`
 	Content         string  `json:"content" binding:"required"`
 }
@@ -51,12 +51,21 @@ func CreatProblem(c *gin.Context) {
 		})
 		return
 	}
+	var responseProblems []models.Problems
+	for _, p := range problems {
+		responseProblems = append(responseProblems, models.Problems{
+			Keypoint:        p.Keypoint,
+			QuestionsNumber: p.QuestionsNumber,
+			TotalScore:      p.TotalScore,
+			Content:         p.Content,
+		})
+	}
 	c.JSON(http.StatusOK, gin.H{
 		"code":    1,
 		"message": "上传成功",
 		"data": gin.H{
 			"id":       input.ExamId,
-			"problems": problems,
+			"problems": responseProblems,
 		},
 	})
 }
