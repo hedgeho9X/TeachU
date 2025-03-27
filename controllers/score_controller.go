@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/Hedgeho9X/TeachU/models"
 	"github.com/Hedgeho9X/TeachU/services"
 	"github.com/gin-gonic/gin"
 )
@@ -20,10 +21,12 @@ func UploadScore(c *gin.Context) {
 	var input struct {
 		ExamID uint `json:"exam_id" binding:"required"`
 		Scores []struct {
-			StudentNumber  string  `json:"student_number" binding:"required"`
-			StudentName    string  `json:"student_name" binding:"required"`
-			QuestionNumber int     `json:"question_id" binding:"required"`
-			Score          float64 `json:"score" binding:"required,gte=0"`
+			StudentNumber string `json:"student_number" binding:"required"`
+			StudentName   string `json:"student_name" binding:"required"`
+			Questions     []struct {
+				QuestionNumber int     `json:"question_id" binding:"required"`
+				Score          float64 `json:"score" binding:"required"`
+			} `json:"questions" binding:"required"`
 		} `json:"scores" binding:"required"`
 	}
 
@@ -36,21 +39,20 @@ func UploadScore(c *gin.Context) {
 	// 示例处理逻辑：
 	var successCount int
 	// 将输入的成绩数据转换为服务层期望的格式
-	scores := make([]struct {
-		StudentNumber  string  `json:"student_number"`
-		QuestionNumber int     `json:"question_number"`
-		Score          float64 `json:"score"`
-	}, len(input.Scores))
+	scores := make([]models.ScoreInput, len(input.Scores))
 
 	for i, s := range input.Scores {
-		scores[i] = struct {
-			StudentNumber  string  `json:"student_number"`
-			QuestionNumber int     `json:"question_number"`
-			Score          float64 `json:"score"`
-		}{
-			StudentNumber:  s.StudentNumber,
-			QuestionNumber: s.QuestionNumber,
-			Score:          s.Score,
+		questions := make([]models.QuestionScore, len(s.Questions))
+		for j, q := range s.Questions {
+			questions[j] = models.QuestionScore{
+				QuestionNumber: q.QuestionNumber,
+				Score:          q.Score,
+			}
+		}
+
+		scores[i] = models.ScoreInput{
+			StudentNumber: s.StudentNumber,
+			Questions:     questions,
 		}
 	}
 
