@@ -3,6 +3,7 @@ package controllers
 import (
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/Hedgeho9X/TeachU/services"
 	"github.com/gin-gonic/gin"
@@ -27,7 +28,7 @@ func UploadScore(c *gin.Context) {
 	}
 
 	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"code": "0", "error": "参数错误: " + err.Error()})
+		c.JSON(http.StatusOK, gin.H{"code": "0", "error": "输入有误: " + err.Error()})
 		return
 	}
 
@@ -55,7 +56,7 @@ func UploadScore(c *gin.Context) {
 
 	successCount, err := services.CreateScores(input.ExamID, scores)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"code": "0", "error": err.Error()})
+		c.JSON(http.StatusOK, gin.H{"code": "0", "error": err.Error()})
 		return
 	}
 
@@ -68,4 +69,38 @@ func UploadScore(c *gin.Context) {
 			"success": successCount,
 		},
 	})
+}
+
+func ListScore(c *gin.Context) {
+	examID := c.Query("exam_id")
+	if examID == "" {
+		c.JSON(http.StatusOK, gin.H{
+			"code": "0",
+			"msg":  "exam_id不能为空",
+		})
+		return
+
+		ExamIDUint, err := strconv.ParseUint(examID, 10, 64)
+		if err != nil {
+			c.JSON(http.StatusOK, gin.H{
+				"code": "0",
+				"msg":  "exam_id必须为数字",
+			})
+			return
+		}
+	}
+	scores, err := services.ListScores(uint(ExamIDUint))
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"code": "0",
+			"msg":  err.Error(),
+		})
+		return
+		c.JSON(http.StatusOK, gin.H{
+			"code": "1",
+			"msg":  "获取成绩成功",
+			"data": scores,
+		})
+	}
+
 }

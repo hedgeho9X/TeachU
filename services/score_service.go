@@ -58,3 +58,14 @@ func CreateScores(examID uint, scores []struct {
 
 	return successCount, nil
 }
+
+func ListScores(examID uint) ([]models.Score, error) {
+	var scores []models.Score
+
+	// 使用预加载获取成绩记录及关联的学生信息
+	if err := config.DB.Preload("Student").Where("exam_id = ?", examID).Find(&scores).Error; err != nil {
+		return nil, fmt.Errorf("获取成绩记录失败: %v", err)
+	}
+
+	return scores, nil
+}
