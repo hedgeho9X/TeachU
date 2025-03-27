@@ -93,21 +93,3 @@ CREATE TABLE IF NOT EXISTS scores (
 ,   INDEX idx_student_exam (student_id, exam_id)  ,-- 联合索引
     INDEX idx_deleted_at (deleted_at)              -- 软删除索引
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
-
--- 修改所有外键约束，添加删除规则
-ALTER TABLE classes 
-MODIFY FOREIGN KEY (created_user_id) REFERENCES users(id) ON DELETE SET NULL;
-
-ALTER TABLE students
-MODIFY FOREIGN KEY (class_id) REFERENCES classes(id) ON DELETE CASCADE;
-
-ALTER TABLE exams
-MODIFY FOREIGN KEY (created_user_id) REFERENCES users(id) ON DELETE SET NULL;
-
-ALTER TABLE problems
-MODIFY FOREIGN KEY (exam_id) REFERENCES exams(id) ON DELETE CASCADE;
-
-ALTER TABLE scores
-MODIFY FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE,
-MODIFY FOREIGN KEY (exam_id) REFERENCES exams(id) ON DELETE CASCADE;

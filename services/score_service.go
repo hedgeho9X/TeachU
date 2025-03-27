@@ -39,10 +39,10 @@ func CreateScores(examID uint, scores []models.ScoreInput) (int, error) {
 				tx.Rollback()
 				return 0, fmt.Errorf("本次考试中试题号%d不存在", q.QuestionNumber)
 			}
-			if err := tx.Where("questions_number =? AND exam_id =? AND student_id = ?", q.QuestionNumber, examID, s.StudentNumber).First(&scores).Error; err != nil {
-				tx.Rollback()
-				return 0, fmt.Errorf("该条记录已存在")
-			}
+			// if err := tx.Where("questions_number =? AND exam_id =? AND student_id = ?", q.QuestionNumber, examID, s.StudentNumber).First(&scores).Error; err != nil {
+			// 	tx.Rollback()
+			// 	return 0, fmt.Errorf("该条记录已存在")
+			// }
 			//大型严重BUG:
 			//First方法的第二个参数q.QuestionNumber可能被误解为按主键查询。在GORM中，当使用First(&question, q.QuestionNumber)时，它会默认按主键ID进行查询。但这里应该根据where条件来过滤，所以不需要传入q.QuestionNumber作为第二个参数，否则会生成类似WHERE id = ? AND questions_number = ? AND exam_id = ?的条件，这显然不正确。
 
