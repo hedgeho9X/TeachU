@@ -9,10 +9,24 @@ import (
 )
 
 // GetClassesByUserID 获取用户创建的班级列表
-func GetClassesByUserID(userID uint) ([]models.Class, error) {
-	var classes []models.Class
-	err := config.DB.Where("created_user_id = ?", userID).Find(&classes).Error
-	return classes, err
+// 新增响应结构体
+type ClassResp struct {
+	models.Class
+	StudentCount int `json:"student_count"`
+}
+
+func GetClassesByUserID(userID uint) ([]ClassResp, error) {
+	var resp []ClassResp
+
+	// 使用左连接查询并统计学生人数
+	err := config.DB.Model(&models.Class{}).
+		Select("classes.*, COUNT(students.id) as student_count").
+		Joins("LEFT JOIN students ON students.class_id = classes.id").
+		Where("classes.created_user_id = ?", userID).
+		Group("classes.id").
+		Find(&resp).Error
+
+	return resp, err
 }
 
 // CreateClassInput 创建班级的输入参数
