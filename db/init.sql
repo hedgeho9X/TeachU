@@ -93,3 +93,19 @@ CREATE TABLE IF NOT EXISTS scores (
 ,   INDEX idx_student_exam (student_id, exam_id)  ,-- 联合索引
     INDEX idx_deleted_at (deleted_at)              -- 软删除索引
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS class_metrics (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    exam_id BIGINT UNSIGNED NOT NULL,
+    student_count INT NOT NULL, -- 学生人数
+    total_score DECIMAL(5,2) NOT NULL,  -- 总分
+    avg_total_score DECIMAL(5,2) NOT NULL,  -- 总分平均分
+    max_total_score DECIMAL(5,2) NOT NULL,  -- 总分最高分
+    min_total_score DECIMAL(5,2) NOT NULL,  -- 总分最低分
+    median_total_score DECIMAL(5,2) NOT NULL, -- 总分中位数
+    std_dev DECIMAL(5,2) NOT NULL,  -- 标准差
+    score_buckets JSON, -- 存储为 {"90":5, "80":12} 分数段
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

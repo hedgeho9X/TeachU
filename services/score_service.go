@@ -40,7 +40,7 @@ func CreateScores(examID uint, scores []models.ScoreInput) (int, error) {
 				tx.Rollback()
 				return 0, fmt.Errorf("本次考试中试题号%d不存在", q.QuestionNumber)
 			}
-			if err := tx.Where("question_number =? AND exam_id =? AND student_id = ?", q.QuestionNumber, examID, student.ID).First(&existing).Error; err != nil {
+			if err := tx.Where("question_number =? AND exam_id =? AND student_id = ?", q.QuestionNumber, examID, student.ID).First(&existing).Error; err == nil {
 				tx.Rollback()
 				return 0, fmt.Errorf("该条记录已存在")
 			}

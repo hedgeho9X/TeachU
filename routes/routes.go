@@ -22,6 +22,6 @@ func SetupRouter() *gin.Engine {
 	RegisterAIRoutes(r)
 	RegisterResourceRoutes(r)
 	RegisterTeachingRoutes(r)
-
+	RegisterAnalysisRoutes(r)
 	return r
 }

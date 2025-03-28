@@ -5,7 +5,6 @@ go 1.23.5
 require (
 	code.sajari.com/docconv/v2 v2.0.0-pre.4
 	github.com/aliyun/alibabacloud-oss-go-sdk-v2 v1.2.1
-	github.com/beevik/etree v1.5.0
 	github.com/gin-gonic/gin v1.10.0
 	github.com/golang-jwt/jwt/v4 v4.5.0
 	github.com/redis/go-redis/v9 v9.7.3
@@ -13,6 +12,7 @@ require (
 	github.com/volcengine/volc-sdk-golang v1.0.198
 	github.com/volcengine/volcengine-go-sdk v1.0.187
 	golang.org/x/crypto v0.35.0
+	gorm.io/datatypes v1.2.5
 	gorm.io/driver/mysql v1.5.7
 	gorm.io/gorm v1.25.12
 )
@@ -40,7 +40,7 @@ require (
 	github.com/go-resty/resty/v2 v2.3.0 // indirect
 	github.com/go-sql-driver/mysql v1.9.0 // indirect
 	github.com/goccy/go-json v0.10.5 // indirect
-	github.com/google/uuid v1.3.0 // indirect
+	github.com/google/uuid v1.6.0 // indirect
 	github.com/jaytaylor/html2text v0.0.0-20200412013138-3577fbdbcff7 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
