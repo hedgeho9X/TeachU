@@ -150,12 +150,8 @@ func calculateScoreBuckets(scores []float64) datatypes.JSON {
 	// 构建有序map
 	ordered := make(map[string]int)
 	for _, k := range keys {
-		if k == 150 {
-			ordered["150+"] = buckets[k]
-		} else {
-			key := fmt.Sprintf("%d-%d", k, k+9)
-			ordered[key] = buckets[k]
-		}
+		key := fmt.Sprintf("%d-%d", k, k+9)
+		ordered[key] = buckets[k]
 	}
 
 	jsonData, _ := json.Marshal(ordered)
