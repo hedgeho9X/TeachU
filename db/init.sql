@@ -54,14 +54,15 @@ CREATE TABLE IF NOT EXISTS students (
 -- 创建试题表
 CREATE TABLE IF NOT EXISTS exams (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-    created_user_id BIGINT UNSIGNED NOT NULL,  -- 关联 users 表的 id
-    class_id BIGINT UNSIGNED NOT NULL,  -- 关联 classes 表的 id
-    exam_name VARCHAR(100) NOT NULL,        -- 试题名称
-    subject VARCHAR(50) NOT NULL,      -- 科目
+    created_user_id BIGINT UNSIGNED NOT NULL,
+    class_id BIGINT UNSIGNED NOT NULL,
+    exam_name VARCHAR(100) NOT NULL,
+    subject VARCHAR(50) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    deleted_at TIMESTAMP NULL,         -- 添加软删除字段
-    FOREIGN KEY (created_user_id) REFERENCES users(id)
+    deleted_at TIMESTAMP NULL,
+    FOREIGN KEY (created_user_id) REFERENCES users(id),
+    FOREIGN KEY (class_id) REFERENCES classes(id) ON DELETE CASCADE  -- 添加级联删除
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS problems (
@@ -89,8 +90,8 @@ CREATE TABLE IF NOT EXISTS scores (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     deleted_at TIMESTAMP NULL,                 -- 软删除字段
     FOREIGN KEY (student_id) REFERENCES students(id),
-    FOREIGN KEY (exam_id) REFERENCES exams(id)
-,   INDEX idx_student_exam (student_id, exam_id)  ,-- 联合索引
+    FOREIGN KEY (exam_id) REFERENCES exams(id) ON DELETE CASCADE,  -- 添加级联删除
+    INDEX idx_student_exam (student_id, exam_id)  ,-- 联合索引
     INDEX idx_deleted_at (deleted_at)              -- 软删除索引
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -107,5 +108,6 @@ CREATE TABLE IF NOT EXISTS class_metrics (
     score_buckets JSON, -- 存储为 {"90":5, "80":12} 分数段
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    deleted_at TIMESTAMP NULL
+    deleted_at TIMESTAMP NULL,
+    FOREIGN KEY (exam_id) REFERENCES exams(id) ON DELETE CASCADE  -- 新增外键约束
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
