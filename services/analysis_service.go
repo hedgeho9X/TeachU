@@ -133,11 +133,7 @@ func calculateScoreBuckets(scores []float64) datatypes.JSON {
 	// 统计原始数据
 	for _, score := range scores {
 		lower := int(math.Floor(score/10)) * 10
-		if lower >= 150 {
-			buckets[150]++
-		} else {
-			buckets[lower]++
-		}
+		buckets[lower]++
 	}
 
 	// 获取有序的key
