@@ -128,17 +128,36 @@ func calculateMedian(scores []float64) float64 {
 
 // 计算分数段分布
 func calculateScoreBuckets(scores []float64) datatypes.JSON {
-	buckets := make(map[string]int)
+	buckets := make(map[int]int) // 改用整数作为key便于排序
+
+	// 统计原始数据
 	for _, score := range scores {
 		lower := int(math.Floor(score/10)) * 10
-		upper := lower + 9
-		if lower >= 100 {
-			buckets["100+"]++
+		if lower >= 150 {
+			buckets[150]++
 		} else {
-			key := fmt.Sprintf("%d-%d", lower, upper)
-			buckets[key]++
+			buckets[lower]++
 		}
 	}
-	jsonData, _ := json.Marshal(buckets)
+
+	// 获取有序的key
+	keys := make([]int, 0, len(buckets))
+	for k := range buckets {
+		keys = append(keys, k)
+	}
+	sort.Ints(keys)
+
+	// 构建有序map
+	ordered := make(map[string]int)
+	for _, k := range keys {
+		if k == 150 {
+			ordered["150+"] = buckets[k]
+		} else {
+			key := fmt.Sprintf("%d-%d", k, k+9)
+			ordered[key] = buckets[k]
+		}
+	}
+
+	jsonData, _ := json.Marshal(ordered)
 	return datatypes.JSON(jsonData)
 }
