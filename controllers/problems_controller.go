@@ -1,6 +1,8 @@
 package controllers
 
 import (
+	"fmt"
+	"github.com/Hedgeho9X/TeachU/config"
 	"net/http"
 
 	"github.com/Hedgeho9X/TeachU/models"
@@ -40,6 +42,15 @@ func CreatProblem(c *gin.Context) {
 			c.JSON(http.StatusOK, gin.H{
 				"code": 0,
 				"msg":  "传入内容含空信息",
+			})
+			return
+		}
+		var existingProblem models.Problems
+		if err := config.DB.Where("exam_id = ? AND questions_number = ?",
+			input.ExamId, detail.QuestionsNumber).First(&existingProblem).Error; err == nil {
+			c.JSON(http.StatusOK, gin.H{
+				"code": 0,
+				"msg":  fmt.Sprintf("试卷 %d 中已存在题号为 %d 的试题", input.ExamId, detail.QuestionsNumber),
 			})
 			return
 		}
