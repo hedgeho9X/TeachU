@@ -36,6 +36,15 @@ func AnalyzeClass(examID uint) (models.ClassMetric, error) {
 		tx.Rollback()
 		return analysis, err
 	}
+	var examTotalScore int64
+	if err := tx.Model(&models.Problems{}).
+		Select("SUM(total_score)").
+		Where("exam_id = ?", examID).
+		Row().
+		Scan(&examTotalScore); err != nil {
+		tx.Rollback()
+		return analysis, err
+	}
 
 	// 获取班级所有学生总分
 	var studentTotals []float64
@@ -78,7 +87,7 @@ func AnalyzeClass(examID uint) (models.ClassMetric, error) {
 	analysis = models.ClassMetric{
 		ExamID:           examID,
 		StudentCount:     totalStudents,
-		TotalScore:       total,
+		TotalScore:       examTotalScore,
 		AvgTotalScore:    avg,
 		MaxTotalScore:    max,
 		MinTotalScore:    min,
@@ -96,6 +105,106 @@ func AnalyzeClass(examID uint) (models.ClassMetric, error) {
 	tx.Commit()
 	return analysis, nil
 }
+
+func AnalyzeKeypoint(examID uint) (models.KeypointMetricResp, error) {
+	tx := config.DB.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
+	// 获取知识点统计
+	var keypointMetrics []models.KeypointMetric
+	err := tx.Model(&models.Score{}).
+		Select(`
+			p.keypoint,
+			SUM(scores.score) as total_score,
+			AVG(scores.score) as average_score,
+			COUNT(DISTINCT scores.student_id) as student_count
+		`).
+		Joins("JOIN problems p ON p.exam_id = scores.exam_id AND p.questions_number = scores.question_number").
+		Where("scores.exam_id = ?", examID).
+		Group("p.keypoint").
+		Scan(&keypointMetrics).Error
+
+	if err != nil {
+		tx.Rollback()
+		return models.KeypointMetricResp{}, err
+	}
+
+	// 获取知识点总分（用于计算得分率）
+	var kpTotals []struct {
+		Keypoint string
+		Total    float64
+	}
+	tx.Model(&models.Problems{}).
+		Select("keypoint, SUM(total_score) as total").
+		Where("exam_id = ?", examID).
+		Group("keypoint").
+		Scan(&kpTotals)
+
+	// 转换为map方便查找
+	totalMap := make(map[string]float64)
+	for _, t := range kpTotals {
+		totalMap[t.Keypoint] = t.Total
+		// print(t.Keypoint, t.Total, "\n")
+	}
+
+	// 计算得分率
+	for i := range keypointMetrics {
+		if total, exists := totalMap[keypointMetrics[i].Keypoint]; exists && total > 0 {
+			keypointMetrics[i].ScoreRate = keypointMetrics[i].TotalScore / total
+			keypointMetrics[i].TotalScore = total
+		}
+	}
+
+	// 构建响应结构
+	resp := models.KeypointMetricResp{
+		ExamID:          examID,
+		KeypointMetrics: keypointMetrics,
+	}
+
+	tx.Commit()
+	return resp, nil
+}
+
+func AiAnalyzeClass(examID uint) (string, error) {
+	// 调用豆包进行分析
+	var KeypointAnalysis models.KeypointMetricResp
+	var ClassMetric models.ClassMetric
+	KeypointAnalysis, err := AnalyzeKeypoint(examID)
+	if err != nil {
+		return "", err
+	}
+	ClassMetric, err = AnalyzeClass(examID)
+	if err != nil {
+		return "", err
+	}
+	JsonRes := struct {
+		KeypointAnalysis models.KeypointMetricResp `json:"keypoint_analysis"`
+		ClassMetric      models.ClassMetric        `json:"class_metric"`
+	}{
+		KeypointAnalysis: KeypointAnalysis,
+		ClassMetric:      ClassMetric,
+	}
+
+	// 转换为JSON字符串
+	jsonData, err := json.Marshal(JsonRes)
+	if err != nil {
+		return "", fmt.Errorf("JSON序列化失败: %v", err)
+	}
+
+	result, err := Chat(string(jsonData), DoubaoLite, ScoreAnalyzePrompt)
+	if err != nil {
+		return "", err
+	}
+	return result, nil
+}
+
+// func AnalyzeStudent(examID uint, studentID uint) (models.StudentAnalysisResponse, error) {
+
+// }
 
 // 计算标准差
 func calculateStdDev(scores []float64, mean float64) float64 {

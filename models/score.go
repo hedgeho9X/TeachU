@@ -14,7 +14,7 @@ type Score struct {
 	ExamID         uint           `gorm:"column:exam_id;not null"`
 	Exam           Exam           `gorm:"foreignKey:ExamID"`
 	QuestionNumber int            `gorm:"column:question_number;not null"`
-	Score          float64        `gorm:"column:score;type:decimal(5,2);not null"`
+	Score          float64        `gorm:"column:score;type:decimal(5,2);column:score;not null"`
 	CreatedAt      time.Time      `gorm:"column:created_at"`
 	UpdatedAt      time.Time      `gorm:"column:updated_at"`
 	DeletedAt      gorm.DeletedAt `gorm:"column:deleted_at;index"` // 修改这里
