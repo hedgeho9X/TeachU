@@ -11,7 +11,7 @@ type ClassMetric struct {
 	ID               uint           `gorm:"primaryKey"`
 	ExamID           uint           `gorm:"index;not null"`
 	StudentCount     int            `gorm:"not null"`
-	TotalScore       int64          `gorm:"type:int;not null"`
+	TotalScore       float64        `gorm:"type:int;not null"`
 	AvgTotalScore    float64        `gorm:"type:decimal(5,2);not null"`
 	MaxTotalScore    float64        `gorm:"type:decimal(5,2);not null"`
 	MinTotalScore    float64        `gorm:"type:decimal(5,2);not null"`

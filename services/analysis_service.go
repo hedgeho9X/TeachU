@@ -36,7 +36,7 @@ func AnalyzeClass(examID uint) (models.ClassMetric, error) {
 		tx.Rollback()
 		return analysis, err
 	}
-	var examTotalScore int64
+	var examTotalScore float64
 	if err := tx.Model(&models.Problems{}).
 		Select("SUM(total_score)").
 		Where("exam_id = ?", examID).
