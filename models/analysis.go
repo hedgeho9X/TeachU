@@ -37,4 +37,23 @@ type KeypointMetric struct { // 重命名结构体
 }
 
 type StudentAnalysisResponse struct {
+	StudentID      uint               `json:"student_id"`
+	TotalScore     float64            `json:"total_score"`
+	StudentMetrics []StudentKeypoints `json:"student_keypoints"`
+	StudentHistory []StudentHistory   `json:"student_history"`
+}
+
+type StudentKeypoints struct {
+	Keypoint     string  `json:"keypoint"`
+	Score        float64 `json:"score"`
+	AverageScore float64 `json:"average_score"`
+	ScoreRate    float64 `json:"score_rate"` // 新增字段
+	IsHigh       bool    `json:"is_high"`
+	MasteryLevel string  `json:"mastery_level"`
+}
+type StudentHistory struct {
+	ExamID       uint      `json:"exam_id"`
+	Score        float64   `json:"score"`
+	AverageScore float64   `json:"average_score"`
+	Time         time.Time `json:"time"`
 }

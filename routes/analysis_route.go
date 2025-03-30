@@ -14,4 +14,6 @@ func RegisterAnalysisRoutes(r *gin.Engine) {
 	analysis.Use(middlewares.JWTAuth())
 	analysis.GET("/class", controllers.AnalyzeExam)
 	analysis.GET("/class-ai", controllers.AiAnalyzeClass)
+	analysis.GET("/student", controllers.AnalyzeStudent)
+	analysis.GET("/student-ai", controllers.AiAnalyzeStudent)
 }

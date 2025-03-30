@@ -55,7 +55,7 @@ func AnalyzeClass(examID uint) (models.ClassMetric, error) {
 	}
 
 	// 转换总分到切片
-	for _, total := range studentScores {
+	for _, total := range studentTotals {
 		studentTotals = append(studentTotals, total)
 	}
 
@@ -202,9 +202,129 @@ func AiAnalyzeClass(examID uint) (string, error) {
 	return result, nil
 }
 
-// func AnalyzeStudent(examID uint, studentID uint) (models.StudentAnalysisResponse, error) {
+func AnalyzeStudent(examID uint, studentID uint) (models.StudentAnalysisResponse, error) {
+	resp := models.StudentAnalysisResponse{}
+	resp.StudentID = studentID
+	tx := config.DB.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+	var scores []models.Score
+	if err := tx.Where("exam_id = ? AND student_id = ?", examID, studentID).Find(&scores).Error; err != nil {
+		tx.Rollback()
+		return models.StudentAnalysisResponse{}, err
+	}
 
-// }
+	if err := tx.Model(&models.Score{}).
+		Select("SUM(score)").
+		Where("exam_id = ? AND student_id = ?", examID, studentID).
+		Row().
+		Scan(&resp.TotalScore); err != nil {
+		tx.Rollback()
+		return models.StudentAnalysisResponse{}, err
+	}
+
+	tx.Model(&models.Score{}).
+		Select(`
+            scores.exam_id,
+            exams.exam_name,
+            SUM(score) as score,
+            exams.created_at,
+            (SELECT AVG(score) FROM scores s WHERE s.exam_id = scores.exam_id) as average_score
+        `).
+		Joins("JOIN exams ON exams.id = scores.exam_id").
+		Where("scores.student_id = ? AND scores.exam_id = ?", studentID, examID).
+		Group("scores.exam_id, exams.exam_name, exams.created_at").
+		Order("exams.created_at DESC").
+		Limit(6).
+		Scan(&resp.StudentHistory)
+	// 知识点得分统计
+	var kpScores []models.StudentKeypoints
+	err := tx.Model(&models.Score{}).
+		Select(`
+            p.keypoint,
+            SUM(scores.score) as score,
+            AVG(scores.score) as average_score
+        `).
+		Joins("JOIN problems p ON p.exam_id = scores.exam_id AND p.questions_number = scores.question_number").
+		Where("scores.exam_id = ? AND scores.student_id = ?", examID, studentID).
+		Group("p.keypoint").
+		Scan(&kpScores).Error
+	if err != nil {
+		tx.Rollback()
+		return models.StudentAnalysisResponse{}, err
+	}
+
+	// 获取知识点总分（用于计算得分率）
+	var kpTotals []struct {
+		Keypoint string
+		Total    float64
+	}
+	tx.Model(&models.Problems{}).
+		Select("keypoint, SUM(total_score) as total").
+		Where("exam_id = ?", examID).
+		Group("keypoint").
+		Scan(&kpTotals)
+
+	totalMap := make(map[string]float64)
+	for _, t := range kpTotals {
+		totalMap[t.Keypoint] = t.Total
+	}
+
+	// 计算得分率和掌握程度
+	for i := range kpScores {
+		if total, exists := totalMap[kpScores[i].Keypoint]; exists && total > 0 {
+			kpScores[i].ScoreRate = kpScores[i].Score / total
+			kpScores[i].MasteryLevel = getMasteryLevel(kpScores[i].ScoreRate)
+			kpScores[i].IsHigh = kpScores[i].Score >= kpScores[i].AverageScore
+		}
+	}
+
+	resp.StudentMetrics = kpScores
+
+	tx.Commit()
+	return resp, nil
+}
+
+func AiAnalyzeStudent(examID uint, studentID uint) (string, error) {
+
+	analysis, err := AnalyzeStudent(examID, studentID)
+	if err != nil {
+		return "", err
+	}
+
+	JsonRes := struct {
+		AnalysisResult models.StudentAnalysisResponse `json:"analysis"`
+	}{
+		AnalysisResult: analysis,
+	}
+
+	// 转换为JSON字符串
+	jsonData, err := json.Marshal(JsonRes)
+	if err != nil {
+		return "", fmt.Errorf("JSON序列化失败: %v", err)
+	}
+
+	result, err := Chat(string(jsonData), DoubaoLite, StudentAnalyzePrompt)
+	if err != nil {
+		return "", err
+	}
+	return result, nil
+}
+
+// 新增辅助函数
+func getMasteryLevel(rate float64) string {
+	switch {
+	case rate >= 0.8:
+		return "high"
+	case rate >= 0.6:
+		return "medium"
+	default:
+		return "low"
+	}
+}
 
 // 计算标准差
 func calculateStdDev(scores []float64, mean float64) float64 {
