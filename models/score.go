@@ -38,7 +38,7 @@ type QuestionScore struct {
 }
 
 type StudentSimple struct {
-	ID            uint   `json:"-"`
+	ID            uint   `json:"student_id"`
 	StudentNumber string `json:"student_number"`
 	StudentName   string `json:"student_name"`
 }
