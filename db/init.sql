@@ -99,7 +99,7 @@ CREATE TABLE IF NOT EXISTS class_metrics (
     id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     exam_id BIGINT UNSIGNED NOT NULL,
     student_count INT NOT NULL, -- 学生人数
-    total_score INT NOT NULL,  -- 该堂考试的总分
+    total_score FLOAT NOT NULL,  -- 该堂考试的总分
     avg_total_score DECIMAL(5,2) NOT NULL,  -- 总分平均分
     max_total_score DECIMAL(5,2) NOT NULL,  -- 总分最高分
     min_total_score DECIMAL(5,2) NOT NULL,  -- 总分最低分

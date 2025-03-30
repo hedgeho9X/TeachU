@@ -279,6 +279,7 @@ func AnalyzeStudent(examID uint, studentID uint) (models.StudentAnalysisResponse
 			kpScores[i].ScoreRate = kpScores[i].Score / total
 			kpScores[i].MasteryLevel = getMasteryLevel(kpScores[i].ScoreRate)
 			kpScores[i].IsHigh = kpScores[i].Score >= kpScores[i].AverageScore
+			kpScores[i].TotalScore = total
 		}
 	}
 

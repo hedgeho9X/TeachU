@@ -47,12 +47,14 @@ type StudentKeypoints struct {
 	Keypoint     string  `json:"keypoint"`
 	Score        float64 `json:"score"`
 	AverageScore float64 `json:"average_score"`
+	TotalScore   float64 `json:"total_score"`
 	ScoreRate    float64 `json:"score_rate"` // 新增字段
 	IsHigh       bool    `json:"is_high"`
 	MasteryLevel string  `json:"mastery_level"`
 }
 type StudentHistory struct {
 	ExamID       uint      `json:"exam_id"`
+	ExamName     string    `json:"exam_name"`
 	Score        float64   `json:"score"`
 	AverageScore float64   `json:"average_score"`
 	Time         time.Time `json:"time"`
