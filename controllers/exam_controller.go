@@ -8,6 +8,8 @@ import (
 	"path/filepath"
 	"strconv"
 
+	"log"
+
 	"code.sajari.com/docconv/v2" // 新增docconv导入
 	"github.com/Hedgeho9X/TeachU/models"
 	"github.com/Hedgeho9X/TeachU/services"
@@ -98,7 +100,8 @@ func CreateExam(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"code": 0, "error": "内容解析失败: " + err.Error()})
 		return
 	}
-	fmt.Print(keyPoint)
+	// 修改原有的fmt.Print为带日志级别的记录
+	log.Printf("[INFO] 试卷解析结果: %s", keyPoint)
 	// 创建并保存试题
 	exam := models.Exam{
 		UserId:   input.CreatedUserID, // 修改字段名
