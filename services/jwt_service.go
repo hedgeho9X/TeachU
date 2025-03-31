@@ -36,6 +36,6 @@ func GenerateToken(userID uint) (string, error) {
 		return "", err
 	}
 
-	fmt.Printf("Token 生成成功: %s\n", tokenString)
+	// fmt.Printf("Token 生成成功: %s\n", tokenString)
 	return tokenString, nil
 }
