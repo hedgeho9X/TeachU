@@ -56,8 +56,8 @@ func AIAnalyzeText(text string) (string, error) {
 		fmt.Printf("standard chat error: %v\n", err)
 		return "", err
 	}
-
-	fmt.Print(*resp.Choices[0].Message.Content.StringValue)
+	string := *resp.Choices[0].Message.Content.StringValue
+	fmt.Println(string)
 	return *resp.Choices[0].Message.Content.StringValue, nil
 }
 
@@ -100,7 +100,7 @@ func AIAnalyzePic(base64String string) (string, error) {
 		fmt.Printf("standard chat error: %v\n", err)
 		return "", err
 	}
-	fmt.Print(*resp.Choices[0].Message.Content.StringValue)
+	fmt.Println(*resp.Choices[0].Message.Content.StringValue)
 	return *resp.Choices[0].Message.Content.StringValue, nil
 
 }
