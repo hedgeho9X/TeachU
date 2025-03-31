@@ -9,6 +9,9 @@ import (
 
 // RegisterAIRoutes 注册AI功能相关路由
 func RegisterAIRoutes(r *gin.Engine) {
+
+	//试题推荐接口
+	r.POST("/ai/stu-rag", controllers.RagRecommend)
 	// AI路由组 - 所有接口需要JWT认证
 	ai := r.Group("/ai")
 	ai.Use(middlewares.JWTAuth()) // JWT身份验证
@@ -26,6 +29,4 @@ func RegisterAIRoutes(r *gin.Engine) {
 	ai.POST("/pic/generate", controllers.PicGenerate)
 	ai.GET("/recommend", controllers.GetRecommmend)
 
-	//试题推荐接口
-	ai.POST("/stu-rag", controllers.RagRecommend)
 }
