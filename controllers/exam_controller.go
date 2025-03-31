@@ -98,7 +98,7 @@ func CreateExam(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"code": 0, "error": "内容解析失败: " + err.Error()})
 		return
 	}
-
+	fmt.Print(keyPoint)
 	// 创建并保存试题
 	exam := models.Exam{
 		UserId:   input.CreatedUserID, // 修改字段名

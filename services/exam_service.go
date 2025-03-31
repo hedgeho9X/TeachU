@@ -31,7 +31,7 @@ func AIAnalyzeText(text string) (string, error) {
 
 	ctx := context.Background()
 
-	fmt.Println("----- standard request -----")
+	fmt.Println("----- AIAnalyzeText request -----")
 	req := model.CreateChatCompletionRequest{
 		// 指定您创建的方舟推理接入点 ID，此处已帮您修改为您的推理接入点 ID
 		Model: "ep-20250311120726-h7xml",
