@@ -36,7 +36,7 @@ func CreateClass(ClassNumber, GradeLevel int, userID uint) error {
 	// 将输入参数转换为班级模型
 	// 检查是否存在相同年级和班级的记录
 	var existingClass models.Class
-	err := config.DB.Where("grade_level = ? AND class_number = ?", GradeLevel, ClassNumber).First(&existingClass).Error
+	err := config.DB.Where("created_user_id = ? AND grade_level = ? AND class_number = ?", userID, GradeLevel, ClassNumber).First(&existingClass).Error
 	if err == nil {
 		return errors.New("该班级已存在")
 	}

@@ -55,7 +55,7 @@ func AnalyzeClass(examID uint) (models.ClassMetric, error) {
 	}
 
 	// 转换总分到切片
-	for _, total := range studentTotals {
+	for _, total := range studentScores { // 修改这里：应该遍历studentScores而不是studentTotals
 		studentTotals = append(studentTotals, total)
 	}
 
@@ -63,7 +63,14 @@ func AnalyzeClass(examID uint) (models.ClassMetric, error) {
 	totalStudents := len(studentTotals)
 	var total, max, min float64
 
+	// 防止空数组导致NaN
+	if totalStudents == 0 {
+		tx.Rollback()
+		return analysis, errors.New("没有找到学生成绩数据")
+	}
+
 	for i, score := range studentTotals {
+		// fmt.Printf("学生 %d 的总分: %f\n", i+1, score)  // 移除或注释掉调试输出
 		if i == 0 {
 			max = score
 			min = score
@@ -211,38 +218,36 @@ func AnalyzeStudent(examID uint, studentID uint) (models.StudentAnalysisResponse
 			tx.Rollback()
 		}
 	}()
-
-	// 使用一次查询获取学生成绩和总分
-	var totalScore float64
-	if err := tx.Model(&models.Score{}).
-		Select("COALESCE(SUM(score), 0) as total_score").
-		Where("exam_id = ? AND student_id = ?", examID, studentID).
-		Scan(&totalScore).Error; err != nil {
+	var scores []models.Score
+	if err := tx.Where("exam_id = ? AND student_id = ?", examID, studentID).Find(&scores).Error; err != nil {
 		tx.Rollback()
 		return models.StudentAnalysisResponse{}, err
 	}
-	resp.TotalScore = totalScore
 
-	// 获取学生历史成绩，添加索引提示
 	if err := tx.Model(&models.Score{}).
+		Select("SUM(score)").
+		Where("exam_id = ? AND student_id = ?", examID, studentID).
+		Row().
+		Scan(&resp.TotalScore); err != nil {
+		tx.Rollback()
+		return models.StudentAnalysisResponse{}, err
+	}
+
+	tx.Model(&models.Score{}).
 		Select(`
             scores.exam_id,
             exams.exam_name,
             SUM(score) as score,
             exams.created_at,
-            (SELECT AVG(score) FROM scores s USE INDEX(idx_exam_id) WHERE s.exam_id = scores.exam_id) as average_score
+            (SELECT AVG(score) FROM scores s WHERE s.exam_id = scores.exam_id) as average_score
         `).
 		Joins("JOIN exams ON exams.id = scores.exam_id").
 		Where("scores.student_id = ? AND scores.exam_id = ?", studentID, examID).
 		Group("scores.exam_id, exams.exam_name, exams.created_at").
 		Order("exams.created_at DESC").
 		Limit(6).
-		Scan(&resp.StudentHistory).Error; err != nil {
-		tx.Rollback()
-		return models.StudentAnalysisResponse{}, err
-	}
-
-	// 知识点得分统计 - 优化查询
+		Scan(&resp.StudentHistory)
+	// 知识点得分统计
 	var kpScores []models.StudentKeypoints
 	err := tx.Model(&models.Score{}).
 		Select(`
@@ -259,19 +264,16 @@ func AnalyzeStudent(examID uint, studentID uint) (models.StudentAnalysisResponse
 		return models.StudentAnalysisResponse{}, err
 	}
 
-	// 获取知识点总分 - 添加缓存
+	// 获取知识点总分（用于计算得分率）
 	var kpTotals []struct {
 		Keypoint string
 		Total    float64
 	}
-	if err := tx.Model(&models.Problems{}).
+	tx.Model(&models.Problems{}).
 		Select("keypoint, SUM(total_score) as total").
 		Where("exam_id = ?", examID).
 		Group("keypoint").
-		Scan(&kpTotals).Error; err != nil {
-		tx.Rollback()
-		return models.StudentAnalysisResponse{}, err
-	}
+		Scan(&kpTotals)
 
 	totalMap := make(map[string]float64)
 	for _, t := range kpTotals {
@@ -342,7 +344,11 @@ func calculateStdDev(scores []float64, mean float64) float64 {
 		diff := score - mean
 		variance += diff * diff
 	}
-	return math.Sqrt(variance / float64(len(scores)))
+	// 防止除以零或NaN结果
+	if len(scores) > 0 {
+		return math.Sqrt(variance / float64(len(scores)))
+	}
+	return 0
 }
 
 // 计算中位数

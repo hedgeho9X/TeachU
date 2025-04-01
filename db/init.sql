@@ -36,7 +36,7 @@ CREATE TABLE IF NOT EXISTS classes (
     created_user_id BIGINT UNSIGNED NOT NULL,       -- 修改为 BIGINT UNSIGNED
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (created_user_id) REFERENCES users(id),
+    FOREIGN KEY (created_user_id) REFERENCES users(id) ON DELETE CASCADE,
     INDEX idx_class_number_grade (class_number, grade_level)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -47,7 +47,7 @@ CREATE TABLE IF NOT EXISTS students (
     class_id BIGINT UNSIGNED NOT NULL,             -- 修改为 BIGINT UNSIGNED
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (class_id) REFERENCES classes(id),
+    FOREIGN KEY (class_id) REFERENCES classes(id) ON DELETE CASCADE,
     INDEX idx_student_number (student_number)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -61,7 +61,7 @@ CREATE TABLE IF NOT EXISTS exams (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     deleted_at TIMESTAMP NULL,
-    FOREIGN KEY (created_user_id) REFERENCES users(id),
+    FOREIGN KEY (created_user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (class_id) REFERENCES classes(id) ON DELETE CASCADE  -- 添加级联删除
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -75,7 +75,7 @@ CREATE TABLE IF NOT EXISTS problems (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     deleted_at TIMESTAMP NULL,                 -- 软删除字段
-    FOREIGN KEY (exam_id) REFERENCES exams(id),
+    FOREIGN KEY (exam_id) REFERENCES exams(id) ON DELETE CASCADE,
     INDEX idx_exam_id (exam_id) ,             -- 添加索引提高查询性能
     INDEX idx_deleted_at (deleted_at)         -- 软删除索引
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
