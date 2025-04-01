@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 
 	"github.com/Hedgeho9X/TeachU/models"
@@ -62,10 +61,6 @@ func RagRecommend(prompt string) (map[string]interface{}, error) {
 	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
 		return nil, fmt.Errorf("响应解析失败: %w", err)
 	}
-	answer, _ := result["recommendations"].([]interface{})[0].(map[string]interface{})["answer"].(string)
-	enhancedAnswer, _ := Chat(answer, DoubaoLite, TransferRagPrompt)
-	result["recommendations"].([]interface{})[0].(map[string]interface{})["answer"] = enhancedAnswer
-	log.Printf("\n[info]RagTransferRes: %v", result)
-	fmt.Println(enhancedAnswer)
+
 	return result, nil
 }
