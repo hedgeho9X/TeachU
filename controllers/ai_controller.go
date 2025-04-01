@@ -135,7 +135,7 @@ func PptGenerate(c *gin.Context) {
 		"msg":  "PPT生成响应",
 		"data": pptRes,
 	})
-	fmt.Printf("PPT生成响应: %+v\n", pptRes)
+	// fmt.Printf("PPT生成响应: %+v\n", pptRes)
 }
 
 func GetPPTProgress(c *gin.Context) {

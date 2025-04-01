@@ -28,5 +28,5 @@ func RegisterAIRoutes(r *gin.Engine) {
 	ai.POST("/pic/generate", controllers.PicGenerate)
 
 	//试题推荐接口
-	ai.POST("/stu-rag", controllers.RagRecommend)
+	ai.POST("/stu-rag", controllers.Rag4Stu)
 }

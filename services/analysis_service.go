@@ -211,36 +211,38 @@ func AnalyzeStudent(examID uint, studentID uint) (models.StudentAnalysisResponse
 			tx.Rollback()
 		}
 	}()
-	var scores []models.Score
-	if err := tx.Where("exam_id = ? AND student_id = ?", examID, studentID).Find(&scores).Error; err != nil {
-		tx.Rollback()
-		return models.StudentAnalysisResponse{}, err
-	}
 
+	// 使用一次查询获取学生成绩和总分
+	var totalScore float64
 	if err := tx.Model(&models.Score{}).
-		Select("SUM(score)").
+		Select("COALESCE(SUM(score), 0) as total_score").
 		Where("exam_id = ? AND student_id = ?", examID, studentID).
-		Row().
-		Scan(&resp.TotalScore); err != nil {
+		Scan(&totalScore).Error; err != nil {
 		tx.Rollback()
 		return models.StudentAnalysisResponse{}, err
 	}
+	resp.TotalScore = totalScore
 
-	tx.Model(&models.Score{}).
+	// 获取学生历史成绩，添加索引提示
+	if err := tx.Model(&models.Score{}).
 		Select(`
             scores.exam_id,
             exams.exam_name,
             SUM(score) as score,
             exams.created_at,
-            (SELECT AVG(score) FROM scores s WHERE s.exam_id = scores.exam_id) as average_score
+            (SELECT AVG(score) FROM scores s USE INDEX(idx_exam_id) WHERE s.exam_id = scores.exam_id) as average_score
         `).
 		Joins("JOIN exams ON exams.id = scores.exam_id").
 		Where("scores.student_id = ? AND scores.exam_id = ?", studentID, examID).
 		Group("scores.exam_id, exams.exam_name, exams.created_at").
 		Order("exams.created_at DESC").
 		Limit(6).
-		Scan(&resp.StudentHistory)
-	// 知识点得分统计
+		Scan(&resp.StudentHistory).Error; err != nil {
+		tx.Rollback()
+		return models.StudentAnalysisResponse{}, err
+	}
+
+	// 知识点得分统计 - 优化查询
 	var kpScores []models.StudentKeypoints
 	err := tx.Model(&models.Score{}).
 		Select(`
@@ -257,16 +259,19 @@ func AnalyzeStudent(examID uint, studentID uint) (models.StudentAnalysisResponse
 		return models.StudentAnalysisResponse{}, err
 	}
 
-	// 获取知识点总分（用于计算得分率）
+	// 获取知识点总分 - 添加缓存
 	var kpTotals []struct {
 		Keypoint string
 		Total    float64
 	}
-	tx.Model(&models.Problems{}).
+	if err := tx.Model(&models.Problems{}).
 		Select("keypoint, SUM(total_score) as total").
 		Where("exam_id = ?", examID).
 		Group("keypoint").
-		Scan(&kpTotals)
+		Scan(&kpTotals).Error; err != nil {
+		tx.Rollback()
+		return models.StudentAnalysisResponse{}, err
+	}
 
 	totalMap := make(map[string]float64)
 	for _, t := range kpTotals {

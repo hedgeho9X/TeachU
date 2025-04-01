@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"log"
 	"net/http"
 	"strconv"
 
@@ -105,7 +106,7 @@ func AiAnalyzeStudent(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"code": 1, "msg": "success", "analysis": AnalysisContent})
 }
 
-func RagRecommend(c *gin.Context) {
+func Rag4Stu(c *gin.Context) {
 	var input struct {
 		ExamID    uint   `json:"exam_id"`
 		StudentID uint   `json:"student_id"`
@@ -115,10 +116,18 @@ func RagRecommend(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"error": err.Error()})
 		return
 	}
-	recommend, err := services.RagRecommend(input.ExamID, input.StudentID, input.Prompt)
+	analysisStr, err := services.StuAnalysis2String(input.ExamID, input.StudentID)
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{"code": 0, "error": err.Error()})
 		return
 	}
+
+	prompt, _ := services.Chat(analysisStr, services.DoubaoLite, services.StudentRagPrompt)
+	recommend, err := services.RagRecommend(prompt)
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{"code": 0, "error": err.Error()})
+		return
+	}
+	log.Printf("prompt: %s\n\nRAG推荐结果: %s", prompt, recommend)
 	c.JSON(http.StatusOK, gin.H{"code": 1, "msg": "success", "recommend": recommend})
 }

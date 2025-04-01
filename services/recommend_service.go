@@ -5,36 +5,35 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+
+	"github.com/Hedgeho9X/TeachU/models"
 )
 
-func RagRecommend(examID uint, studentID uint, prompt string) (map[string]interface{}, error) {
+func StuAnalysis2String(examID uint, studentID uint) (string, error) {
+	analysis, err := AnalyzeStudent(examID, studentID)
+	if err != nil {
+		return "", err
+	}
 
-	// analysis, err := AnalyzeStudent(examID, studentID)
-	// if err != nil {
-	// 	return nil, err
-	// }
+	JsonRes := struct {
+		AnalysisResult models.StudentAnalysisResponse `json:"analysis"`
+	}{
+		AnalysisResult: analysis,
+	}
 
-	// JsonRes := struct {
-	// 	AnalysisResult models.StudentAnalysisResponse `json:"analysis"`
-	// }{
-	// 	AnalysisResult: analysis,
-	// }
+	// 转换为JSON字符串
+	jsonData, err := json.Marshal(JsonRes)
+	if err != nil {
+		return "", fmt.Errorf("JSON序列化失败: %v", jsonData)
+	}
+	return string(jsonData), nil
+}
 
-	// // 转换为JSON字符串
-	// jsonData, err := json.Marshal(JsonRes)
-	// if err != nil {
-	// 	return nil, fmt.Errorf("JSON序列化失败: %v", jsonData)
-	// }
-
-	// question, err := Chat("", DoubaoLite, "推荐一些历史试题")
-	// if err != nil {
-	// 	return nil, err
-	// }
-	// println(question)
-	// 2. 创建请求体
+func RagRecommend(prompt string) (map[string]interface{}, error) {
+	// 1. 调用RAG服务
 	reqBody := fmt.Sprintf(`{"question": "%s"}`, prompt)
 
-	// 3. 创建HTTP请求
+	// 2. 创建HTTP请求
 	req, err := http.NewRequest(
 		"POST",
 		"http://118.145.201.37:8000/recommend",
@@ -45,7 +44,7 @@ func RagRecommend(examID uint, studentID uint, prompt string) (map[string]interf
 	}
 	req.Header.Set("Content-Type", "application/json")
 
-	// 4. 发送请求
+	// 3. 发送请求
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
@@ -53,7 +52,7 @@ func RagRecommend(examID uint, studentID uint, prompt string) (map[string]interf
 	}
 	defer resp.Body.Close()
 
-	// 5. 处理响应
+	// 4. 处理响应
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("推荐服务返回错误状态码: %d", resp.StatusCode)
 	}

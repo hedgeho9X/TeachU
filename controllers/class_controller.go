@@ -22,7 +22,7 @@ func ListClasses(c *gin.Context) {
 		})
 		return
 	}
-	fmt.Printf("正在查询用户ID=%d的班级列表\n", userID)
+	// fmt.Printf("正在查询用户ID=%d的班级列表\n", userID)
 
 	// 调用service层获取班级列表
 	classes, err := services.GetClassesByUserID(userID)
@@ -34,7 +34,7 @@ func ListClasses(c *gin.Context) {
 		})
 		return
 	}
-	fmt.Printf("查询到的班级数量: %d\n", len(classes))
+	// fmt.Printf("查询到的班级数量: %d\n", len(classes))
 
 	// 从上下文获取用户名
 	username, _ := c.Get("username")
