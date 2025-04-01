@@ -29,4 +29,5 @@ func RegisterAIRoutes(r *gin.Engine) {
 
 	//试题推荐接口
 	ai.POST("/stu-rag", controllers.Rag4Stu)
+	ai.POST("/plan-rag", controllers.Rag4Plan)
 }

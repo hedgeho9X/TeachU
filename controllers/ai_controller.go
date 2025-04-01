@@ -135,7 +135,7 @@ func PptGenerate(c *gin.Context) {
 		"msg":  "PPT生成响应",
 		"data": pptRes,
 	})
-	// fmt.Printf("PPT生成响应: %+v\n", pptRes)
+	fmt.Printf("PPT生成响应: %+v\n", pptRes)
 }
 
 func GetPPTProgress(c *gin.Context) {
@@ -341,6 +341,27 @@ func GetRecommmend(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"code": 1,
 		"msg":  "获取推荐主题成功",
+		"data": result,
+	})
+}
+
+func Rag4Plan(c *gin.Context) {
+	// 绑定请求参数
+	var input struct {
+		Msg string `json:"msg"`
+	}
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"code": 0,
+			"msg":  "参数错误",
+			"data": err.Error(),
+		})
+	}
+	prompt, _ := services.Chat(input.Msg, services.DoubaoLite, services.RagAiPrompt)
+	result, _ := services.RagRecommend(prompt)
+	c.JSON(http.StatusOK, gin.H{
+		"code": 1,
+		"msg":  "RAG生成成功",
 		"data": result,
 	})
 }
