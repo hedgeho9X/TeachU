@@ -157,10 +157,11 @@ func AnalyzeKeypoint(examID uint) (models.KeypointMetricResp, error) {
 		// print(t.Keypoint, t.Total, "\n")
 	}
 
-	// 计算得分率
+	// 计算得分率（修改为平均得分率）
 	for i := range keypointMetrics {
 		if total, exists := totalMap[keypointMetrics[i].Keypoint]; exists && total > 0 {
-			keypointMetrics[i].ScoreRate = keypointMetrics[i].TotalScore / total
+			averageScore := keypointMetrics[i].TotalScore / float64(keypointMetrics[i].StudentCount)
+			keypointMetrics[i].ScoreRate = averageScore / total
 			keypointMetrics[i].TotalScore = total
 		}
 	}
