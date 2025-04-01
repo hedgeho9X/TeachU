@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"log"
 	"os"
 
 	ark "github.com/sashabaranov/go-openai"
@@ -90,7 +91,6 @@ func GetAIStream(ctx context.Context, message string) <-chan StreamChunk {
 			}
 		}
 	}()
-
 	// 返回只读通道
 	return ch
 }
@@ -129,5 +129,6 @@ func Chat(text string, Model string, prompt string) (string, error) {
 		fmt.Printf("standard chat error: %v\n", err)
 		return "", err
 	}
+	log.Printf("standard chat resp: %s\n", resp.Choices[0].Message.Content.StringValue)
 	return *resp.Choices[0].Message.Content.StringValue, nil
 }

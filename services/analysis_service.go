@@ -29,7 +29,6 @@ func AnalyzeClass(examID uint) (models.ClassMetric, error) {
 		tx.Rollback()
 		return analysis, err // 返回实际错误
 	}
-	//不存在该记录，进行分析
 	// 获取班级所有学生成绩
 	var scores []models.Score
 	if err := tx.Where("exam_id = ?", examID).Find(&scores).Error; err != nil {
@@ -242,11 +241,12 @@ func AnalyzeStudent(examID uint, studentID uint) (models.StudentAnalysisResponse
             (SELECT AVG(score) FROM scores s WHERE s.exam_id = scores.exam_id) as average_score
         `).
 		Joins("JOIN exams ON exams.id = scores.exam_id").
-		Where("scores.student_id = ? AND scores.exam_id = ?", studentID, examID).
+		Where("scores.student_id = ?", studentID).
 		Group("scores.exam_id, exams.exam_name, exams.created_at").
 		Order("exams.created_at DESC").
 		Limit(6).
 		Scan(&resp.StudentHistory)
+
 	// 知识点得分统计
 	var kpScores []models.StudentKeypoints
 	err := tx.Model(&models.Score{}).

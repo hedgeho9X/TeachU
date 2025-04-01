@@ -356,6 +356,7 @@ func Rag4Plan(c *gin.Context) {
 			"msg":  "参数错误",
 			"data": err.Error(),
 		})
+		return
 	}
 	prompt, _ := services.Chat(input.Msg, services.DoubaoLite, services.RagAiPrompt)
 	result, _ := services.RagRecommend(prompt)
