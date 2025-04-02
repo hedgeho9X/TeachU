@@ -99,10 +99,18 @@ func CreateExam(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"code": 0, "error": "内容解析失败: " + err.Error()})
 		return
 	}
-	result, _ := services.ParseQuestions(keyPoint)
+
+	// 增加JSON有效性检查
+	result, err := services.ParseQuestions(keyPoint)
+	if err != nil {
+	    log.Printf("[ERROR] JSON解析失败: %v\n原始内容: %s", err, keyPoint)
+	    c.JSON(http.StatusOK, gin.H{"code": 0, "error": "试题格式解析失败: " + err.Error()})
+	    return
+	}
+
 	// 修改原有的fmt.Print为带日志级别的记录
 	log.Printf("\n\n[INFO] 试卷解析结果: %s", keyPoint)
-	log.Printf("\n\n[INFO] Json解析结果: %s", result)
+	log.Printf("\n\n[INFO] Json解析结果: %+v", result) // 使用%+v输出结构体详情
 	// 创建并保存试题
 	exam := models.Exam{
 		UserId:   input.CreatedUserID, // 修改字段名
