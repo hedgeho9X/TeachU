@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"path/filepath"
 	"strconv"
+	"strings"
 
 	"log"
 
@@ -100,9 +101,11 @@ func CreateExam(c *gin.Context) {
 		}
 	}
 	// 增加JSON有效性检查
+	// 增加转义字符处理（新增代码）
+	keyPoint = strings.ReplaceAll(keyPoint, `\\`, `\`) // 修正反斜杠转义
 	result, err := services.ParseQuestions(keyPoint)
 	if err != nil {
-		log.Printf("[ERROR] JSON解析失败: %v\n原始内容: %s", err, keyPoint)
+		log.Printf("[ERROR] JSON解析失败: %v\n处理后的内容: %s", err, keyPoint) // 修改日志字段名
 		c.JSON(http.StatusOK, gin.H{"code": 0, "error": "试题格式解析失败: " + err.Error()})
 		return
 	}
