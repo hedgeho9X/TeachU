@@ -465,18 +465,26 @@ func GetStuRank(examID uint) (models.StuRankResp, error) {
 			}
 
 			if rankChange > 0 {
-				resp.ImproveRank = append(resp.ImproveRank, change) // 修正字段名拼写
+				resp.ImproveRank = append(resp.ImproveRank, change)
 			} else if rankChange < 0 {
-				resp.DeclineRank = append(resp.DeclineRank, change) // 修正字段名拼写
+				resp.DeclineRank = append(resp.DeclineRank, change)
 			}
 		}
 	}
 
+	// 按进步/退步名次变化排序（从大到小）
+	sort.Slice(resp.ImproveRank, func(i, j int) bool {
+		return resp.ImproveRank[i].Change > resp.ImproveRank[j].Change
+	})
+	sort.Slice(resp.DeclineRank, func(i, j int) bool {
+		return resp.DeclineRank[i].Change > resp.DeclineRank[j].Change
+	})
+
 	// 限制最多10条记录
-	if len(resp.ImproveRank) > 10 { // 同步修正字段名
+	if len(resp.ImproveRank) > 10 {
 		resp.ImproveRank = resp.ImproveRank[:10]
 	}
-	if len(resp.DeclineRank) > 10 { // 同步修正字段名
+	if len(resp.DeclineRank) > 10 {
 		resp.DeclineRank = resp.DeclineRank[:10]
 	}
 
