@@ -102,7 +102,10 @@ func CreateExam(c *gin.Context) {
 	}
 	// 增加JSON有效性检查
 	// 增加转义字符处理（新增代码）
-	keyPoint = strings.ReplaceAll(keyPoint, `\\`, `\`) // 修正反斜杠转义
+	keyPoint = strings.ReplaceAll(keyPoint, `\\(`, "(") // 处理转义左括号
+	keyPoint = strings.ReplaceAll(keyPoint, `\\)`, ")") // 处理转义右括号
+	keyPoint = strings.ReplaceAll(keyPoint, `\\`, `\`)  // 修正反斜杠转义
+
 	result, err := services.ParseQuestions(keyPoint)
 	if err != nil {
 		log.Printf("[ERROR] JSON解析失败: %v\n处理后的内容: %s", err, keyPoint) // 修改日志字段名
