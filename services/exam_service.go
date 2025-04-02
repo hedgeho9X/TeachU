@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"encoding/base64"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
@@ -164,4 +165,20 @@ func ListExamByClassID(classID uint, userID uint) ([]models.Exam, error) {
 		return nil, result.Error
 	}
 	return exams, nil
+}
+
+// 结构体定义
+type Question struct {
+	QuestionID string `json:"question_id"`
+	Key        string `json:"key"`
+	Content    string `json:"content"`
+}
+
+// ParseQuestions 解析试题JSON到结构体切片
+func ParseQuestions(jsonStr string) ([]Question, error) {
+	var questions []Question
+	if err := json.Unmarshal([]byte(jsonStr), &questions); err != nil {
+		return nil, fmt.Errorf("JSON解析失败: %w", err)
+	}
+	return questions, nil
 }

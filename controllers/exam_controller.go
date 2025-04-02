@@ -43,7 +43,7 @@ func CreateExam(c *gin.Context) {
 		return
 	}
 	// 验证文件大小和类型
-	if input.File.Size > 10<<20 {
+	if input.File.Size > 20<<20 {
 		c.JSON(http.StatusOK, gin.H{"code": 0, "error": "文件大小超过限制"})
 		return
 	}
@@ -95,13 +95,14 @@ func CreateExam(c *gin.Context) {
 		}
 		keyPoint, err = services.AIAnalyzePic(baseContent)
 	}
-
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{"code": 0, "error": "内容解析失败: " + err.Error()})
 		return
 	}
+	result, _ := services.ParseQuestions(keyPoint)
 	// 修改原有的fmt.Print为带日志级别的记录
-	log.Printf("[INFO] 试卷解析结果: %s", keyPoint)
+	log.Printf("\n\n[INFO] 试卷解析结果: %s", keyPoint)
+	log.Printf("\n\n[INFO] Json解析结果: %s", result)
 	// 创建并保存试题
 	exam := models.Exam{
 		UserId:   input.CreatedUserID, // 修改字段名
@@ -124,7 +125,7 @@ func CreateExam(c *gin.Context) {
 			"id":              exam.ID,
 			"name":            exam.ExamName,
 			"subject":         exam.Subject,
-			"KeyPoint":        keyPoint,
+			"KeyPoint":        result,
 		},
 	})
 }
