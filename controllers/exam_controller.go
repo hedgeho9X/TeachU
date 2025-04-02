@@ -93,19 +93,18 @@ func CreateExam(c *gin.Context) {
 			c.JSON(http.StatusOK, gin.H{"code": 0, "error": "base64转换失败: " + err.Error()})
 			return
 		}
-		keyPoint, err = services.AIAnalyzePic(baseContent)
+		keyPoint, _ = services.AIAnalyzePic(baseContent)
 	}
-	if err != nil {
-		c.JSON(http.StatusOK, gin.H{"code": 0, "error": "内容解析失败: " + err.Error()})
+	// 增加JSON有效性检查
+	if keyPoint == "" {
+		c.JSON(http.StatusOK, gin.H{"code": 0, "error": "无效的ai返回内容"})
 		return
 	}
-
-	// 增加JSON有效性检查
 	result, err := services.ParseQuestions(keyPoint)
 	if err != nil {
-	    log.Printf("[ERROR] JSON解析失败: %v\n原始内容: %s", err, keyPoint)
-	    c.JSON(http.StatusOK, gin.H{"code": 0, "error": "试题格式解析失败: " + err.Error()})
-	    return
+		log.Printf("[ERROR] JSON解析失败: %v\n原始内容: %s", err, keyPoint)
+		c.JSON(http.StatusOK, gin.H{"code": 0, "error": "试题格式解析失败: " + err.Error()})
+		return
 	}
 
 	// 修改原有的fmt.Print为带日志级别的记录
