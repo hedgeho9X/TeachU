@@ -92,7 +92,7 @@ CREATE TABLE IF NOT EXISTS scores (
     FOREIGN KEY (student_id) REFERENCES students(id),
     FOREIGN KEY (exam_id) REFERENCES exams(id) ON DELETE CASCADE,  -- 添加级联删除
     INDEX idx_student_exam (student_id, exam_id)  ,-- 联合索引
-    INDEX idx_deleted_at (deleted_at)              -- 软删除索引
+    INDEX idx_deleted_at (deleted_at),        -- 软删除索引
     INDEX idx_exam_id (exam_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
