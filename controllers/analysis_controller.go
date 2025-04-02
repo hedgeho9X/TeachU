@@ -106,6 +106,29 @@ func AiAnalyzeStudent(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"code": 1, "msg": "success", "analysis": AnalysisContent})
 }
 
+func GetRank(c *gin.Context) {
+	ExamIdStr := c.Query("exam_id")
+	if ExamIdStr == "" {
+		c.JSON(http.StatusOK, gin.H{"error": "exam_id为空"})
+		return
+	}
+	// 调用services层分析考试
+	ExamIdUint, err := strconv.ParseUint(ExamIdStr, 10, 64)
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"code": "0",
+			"msg":  "exam_id必须为数字",
+		})
+		return
+	}
+	rank, err := services.GetStuRank(uint(ExamIdUint))
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{"code": 0, "error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"code": 1, "rank": rank})
+}
+
 func Rag4Stu(c *gin.Context) {
 	var input struct {
 		ExamID    uint   `json:"exam_id"`

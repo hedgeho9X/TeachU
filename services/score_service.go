@@ -2,13 +2,13 @@ package services
 
 import (
 	"fmt"
+	"sort"
 
 	"github.com/Hedgeho9X/TeachU/config"
 	"github.com/Hedgeho9X/TeachU/models"
 )
 
-func CreateScores(examID uint, scores []models.ScoreInput) (int, error) {
-	// 开启事务
+func CreateScores(examID uint, scoreInputs []models.ScoreInput) (int, error) {
 	tx := config.DB.Begin()
 	defer func() {
 		if r := recover(); r != nil {
@@ -17,57 +17,119 @@ func CreateScores(examID uint, scores []models.ScoreInput) (int, error) {
 	}()
 
 	var successCount int
-	for _, s := range scores {
-		// 根据学号获取学生ID
+	var scoresToSave []models.Score
+	studentScoreMap := make(map[uint]float64)
+	studentNameMap := make(map[uint]string) // 新增：存储学生ID与姓名的映射
+
+	// 验证考试存在性
+	var exam models.Exam
+	if err := tx.First(&exam, examID).Error; err != nil {
+		tx.Rollback()
+		return 0, fmt.Errorf("考试ID%d不存在", examID)
+	}
+
+	// 新增：创建存在性检查的map
+	existingRecords := make(map[string]struct{})
+
+	// 查询当前考试已存在的记录
+	var existingScores []models.Score
+	if err := tx.Where("exam_id = ?", examID).Find(&existingScores).Error; err != nil {
+		tx.Rollback()
+		return 0, fmt.Errorf("查询已有记录失败: %v", err)
+	}
+
+	// 填充存在性检查map
+	for _, es := range existingScores {
+		key := fmt.Sprintf("%d-%d-%d", es.StudentID, es.ExamID, es.QuestionNumber)
+		existingRecords[key] = struct{}{}
+	}
+
+	for _, s := range scoreInputs {
+		// 学生验证
 		var student models.Student
 		if err := tx.Where("student_number = ?", s.StudentNumber).First(&student).Error; err != nil {
 			tx.Rollback()
 			return 0, fmt.Errorf("学号%s不存在", s.StudentNumber)
 		}
 
-		// 验证考试是否存在
-		var exam models.Exam
-		if err := tx.First(&exam, examID).Error; err != nil {
-			tx.Rollback()
-			return 0, fmt.Errorf("考试ID%d不存在", examID)
-		}
-		// 遍历试题并创建成绩记录
+		studentNameMap[student.ID] = student.StudentName // 新增：记录学生姓名
+
+		// 遍历试题
 		for _, q := range s.Questions {
-			// 验证试题是否存在
-			var question models.Problems
-			var existing models.Score
-			if err := tx.Where("questions_number = ? AND exam_id = ?", q.QuestionNumber, examID).First(&question).Error; err != nil {
+			// 试题验证
+			var problem models.Problems
+			if err := tx.Where("exam_id = ? AND questions_number = ?", examID, q.QuestionNumber).
+				First(&problem).Error; err != nil {
 				tx.Rollback()
-				return 0, fmt.Errorf("本次考试中试题号%d不存在", q.QuestionNumber)
+				return 0, fmt.Errorf("试题%d不存在", q.QuestionNumber)
 			}
-			if err := tx.Where("question_number =? AND exam_id =? AND student_id = ?", q.QuestionNumber, examID, student.ID).First(&existing).Error; err == nil {
-				tx.Rollback()
-				return 0, fmt.Errorf("该条记录已存在")
+
+			// 新增：存在性检查
+			recordKey := fmt.Sprintf("%d-%d-%d", student.ID, examID, q.QuestionNumber)
+			if _, exists := existingRecords[recordKey]; exists {
+				continue // 跳过已存在的记录
 			}
-			//大型严重BUG:
-			//First方法的第二个参数q.QuestionNumber可能被误解为按主键查询。在GORM中，当使用First(&question, q.QuestionNumber)时，它会默认按主键ID进行查询。但这里应该根据where条件来过滤，所以不需要传入q.QuestionNumber作为第二个参数，否则会生成类似WHERE id = ? AND questions_number = ? AND exam_id = ?的条件，这显然不正确。
 
-			// 验证试题是否属于当前考试
-
-			// 创建成绩记录
-			score := models.Score{
+			// 记录需要保存的成绩
+			scoresToSave = append(scoresToSave, models.Score{
 				StudentID:      student.ID,
 				ExamID:         examID,
 				QuestionNumber: q.QuestionNumber,
 				Score:          q.Score,
-			}
+			})
 
-			if err := tx.Create(&score).Error; err != nil {
-				tx.Rollback()
-				return 0, fmt.Errorf("保存成绩失败: %v", err)
-			}
+			// 将新增记录加入存在性检查map
+			existingRecords[recordKey] = struct{}{}
+
+			// 累加总分
+			studentScoreMap[student.ID] += q.Score
 		}
 		successCount++
 	}
-	// 提交事务
+
+	// 批量保存成绩
+	if err := tx.CreateInBatches(scoresToSave, 100).Error; err != nil {
+		tx.Rollback()
+		return 0, fmt.Errorf("保存成绩失败: %v", err)
+	}
+
+	// 生成排名数据
+	type studentTotal struct {
+		ID    uint
+		Total float64
+	}
+	var totals []studentTotal
+	for k, v := range studentScoreMap {
+		totals = append(totals, studentTotal{ID: k, Total: v})
+	}
+
+	// 按总分排序
+	sort.Slice(totals, func(i, j int) bool {
+		return totals[i].Total > totals[j].Total
+	})
+
+	// 生成排名记录
+	var ranks []models.Rank
+	for i, t := range totals {
+		ranks = append(ranks, models.Rank{
+			ExamID:      examID,
+			StudentID:   t.ID,
+			StudentName: studentNameMap[t.ID], // 新增：使用映射表获取姓名
+			Rank:        i + 1,
+			TotalScore:  t.Total,
+		})
+	}
+
+	// 保存排名
+	if err := tx.CreateInBatches(ranks, 100).Error; err != nil {
+		tx.Rollback()
+		return 0, fmt.Errorf("保存排名失败: %v", err)
+	}
+
 	if err := tx.Commit().Error; err != nil {
 		return 0, fmt.Errorf("事务提交失败: %v", err)
 	}
+
 	return successCount, nil
 }
 

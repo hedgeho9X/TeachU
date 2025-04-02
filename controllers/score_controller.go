@@ -11,13 +11,6 @@ import (
 )
 
 func UploadScore(c *gin.Context) {
-	// userIDInterface, _ := c.Get("userID")
-	// userID, ok := userIDInterface.(uint)
-	// if !ok {
-	// 	c.JSON(http.StatusOK, gin.H{"code": "0", "error": "无效的userID"})
-	// 	return
-	// }
-
 	var input struct {
 		ExamID uint `json:"exam_id" binding:"required"`
 		Scores []struct {
@@ -35,8 +28,7 @@ func UploadScore(c *gin.Context) {
 		return
 	}
 
-	// 处理成绩数据（这里需要调用service层保存数据）
-	// 示例处理逻辑：
+	// 处理成绩数据（这里需要调用service层保存数据）UploadScore
 	var successCount int
 	// 将输入的成绩数据转换为服务层期望的格式
 	scores := make([]models.ScoreInput, len(input.Scores))

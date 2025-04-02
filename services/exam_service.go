@@ -119,34 +119,23 @@ func CreateExam(exam *models.Exam) error {
 	return config.DB.Create(exam).Error
 }
 
-// DeleteExamAndRelatedData 级联删除考试及相关数据
+// DeleteExam 级联删除考试及相关数据
 func DeleteExam(examId string, userID uint) error {
 	var exam models.Exam
 
-	// 查找班级是否存在
+	// 验证考试存在性和权限
 	if err := config.DB.First(&exam, examId).Error; err != nil {
 		return errors.New("试题不存在")
 	}
-
-	// 验证是否为班级创建者
 	if exam.UserId != userID {
 		return errors.New("无权删除该试题")
 	}
 
-	// 开启事务
-	tx := config.DB.Begin()
-
-	// 删除试题（直接通过主ID删除）
-	if err := tx.Unscoped().Delete(&models.Exam{}, examId).Error; err != nil {
-		tx.Rollback()
-		return fmt.Errorf("删除试题失败: %v", err)
+	// 直接删除考试记录，依赖数据库级联删除
+	if err := config.DB.Unscoped().Delete(&exam).Error; err != nil {
+		return fmt.Errorf("删除失败: %v", err)
 	}
-	//删除试题对应的问题
-	if err := tx.Unscoped().Delete(&models.Problems{}, examId).Error; err != nil {
-		tx.Rollback()
-		return fmt.Errorf("删除问题失败: %v", err)
-	}
-	return tx.Commit().Error
+	return nil
 }
 
 func GetExamByID(db *gorm.DB, id string) (*models.Exam, error) {

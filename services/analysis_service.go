@@ -323,7 +323,6 @@ func AiAnalyzeStudent(examID uint, studentID uint) (string, error) {
 	return result, nil
 }
 
-// 新增辅助函数
 func getMasteryLevel(rate float64) string {
 	switch {
 	case rate >= 0.8:
@@ -333,6 +332,156 @@ func getMasteryLevel(rate float64) string {
 	default:
 		return "low"
 	}
+}
+
+// 进步退步同学
+func GetStuRank(examID uint) (models.StuRankResp, error) {
+	tx := config.DB.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
+	// 获取当前考试所有排名数据
+	var currentRanks []models.Rank
+	if err := tx.Where("exam_id = ?", examID).
+		Order("`rank` ASC").
+		Find(&currentRanks).Error; err != nil {
+		tx.Rollback()
+		return models.StuRankResp{}, fmt.Errorf("获取排名失败: %v", err)
+	}
+
+	// 获取所有学生姓名
+	studentNameMap := make(map[uint]string)
+	var studentIDs []uint
+	for _, rank := range currentRanks {
+		studentIDs = append(studentIDs, rank.StudentID)
+	}
+
+	var students []models.Student
+	if err := tx.Where("id IN ?", studentIDs).Find(&students).Error; err != nil {
+		tx.Rollback()
+		return models.StuRankResp{}, fmt.Errorf("获取学生信息失败: %v", err)
+	}
+
+	for _, student := range students {
+		studentNameMap[student.ID] = student.StudentName
+	}
+
+	// 构建响应数据
+	resp := models.StuRankResp{
+		ExamID: examID,
+	}
+
+	// 转换全部排名数据
+	for _, rank := range currentRanks {
+		resp.StuRank = append(resp.StuRank, models.Rank{
+			ExamID:      rank.ExamID,
+			StudentID:   rank.StudentID,
+			StudentName: studentNameMap[rank.StudentID],
+			Rank:        rank.Rank,
+			TotalScore:  rank.TotalScore,
+		})
+	}
+
+	// 如果rank表中没有记录，则根据score表生成rank
+	if len(currentRanks) == 0 {
+		// 获取所有学生总分
+		var studentTotals []struct {
+			StudentID uint
+			Total     float64
+		}
+		if err := tx.Model(&models.Score{}).
+			Select("student_id, SUM(score) as total").
+			Where("exam_id = ?", examID).
+			Group("student_id").
+			Scan(&studentTotals).Error; err != nil {
+			tx.Rollback()
+			return models.StuRankResp{}, fmt.Errorf("获取学生总分失败: %v", err)
+		}
+
+		// 按总分排序
+		sort.Slice(studentTotals, func(i, j int) bool {
+			return studentTotals[i].Total > studentTotals[j].Total
+		})
+
+		// 生成排名记录
+		for i, st := range studentTotals {
+			// 获取学生姓名
+			var student models.Student
+			if err := tx.First(&student, st.StudentID).Error; err != nil {
+				tx.Rollback()
+				return models.StuRankResp{}, fmt.Errorf("获取学生信息失败: %v", err)
+			}
+
+			currentRanks = append(currentRanks, models.Rank{
+				ExamID:      examID,
+				StudentID:   st.StudentID,
+				StudentName: student.StudentName, // 直接使用查询结果
+				Rank:        i + 1,
+				TotalScore:  st.Total,
+			})
+
+			// 更新姓名映射表
+			studentNameMap[st.StudentID] = student.StudentName // 新增
+		}
+
+		// 保存生成的排名前确保student_name存在
+		if err := tx.CreateInBatches(currentRanks, 100).Error; err != nil {
+			tx.Rollback()
+			return models.StuRankResp{}, fmt.Errorf("保存排名失败: %v", err)
+		}
+	}
+
+	// 获取前一次考试ID
+	var prevExamID uint
+	tx.Model(&models.Exam{}).
+		Select("id").
+		Where("class_id = (SELECT class_id FROM exams WHERE id = ?) AND created_at < (SELECT created_at FROM exams WHERE id = ?)", examID, examID).
+		Order("created_at DESC").
+		Limit(1).
+		Scan(&prevExamID)
+
+	// 获取历史排名数据
+	prevRankMap := make(map[uint]int)
+	if prevExamID != 0 {
+		var prevRanks []models.Rank
+		if err := tx.Where("exam_id = ?", prevExamID).Find(&prevRanks).Error; err == nil {
+			for _, r := range prevRanks {
+				prevRankMap[r.StudentID] = r.Rank
+			}
+		}
+	}
+
+	// 提取进步和退步数据
+	for _, rank := range currentRanks {
+		if prevRank, exists := prevRankMap[rank.StudentID]; exists {
+			rankChange := prevRank - rank.Rank
+			change := models.RankChange{
+				StudentName: studentNameMap[rank.StudentID],
+				Rank:        rank.Rank,
+				Change:      uint(math.Abs(float64(rankChange))),
+			}
+
+			if rankChange > 0 {
+				resp.ImproveRank = append(resp.ImproveRank, change) // 修正字段名拼写
+			} else if rankChange < 0 {
+				resp.DeclineRank = append(resp.DeclineRank, change) // 修正字段名拼写
+			}
+		}
+	}
+
+	// 限制最多10条记录
+	if len(resp.ImproveRank) > 10 { // 同步修正字段名
+		resp.ImproveRank = resp.ImproveRank[:10]
+	}
+	if len(resp.DeclineRank) > 10 { // 同步修正字段名
+		resp.DeclineRank = resp.DeclineRank[:10]
+	}
+
+	tx.Commit()
+	return resp, nil
 }
 
 // 计算标准差

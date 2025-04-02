@@ -16,4 +16,5 @@ func RegisterAnalysisRoutes(r *gin.Engine) {
 	analysis.GET("/class-ai", controllers.AiAnalyzeClass)
 	analysis.GET("/student", controllers.AnalyzeStudent)
 	analysis.GET("/student-ai", controllers.AiAnalyzeStudent)
+	analysis.GET("/rank", controllers.GetRank)
 }

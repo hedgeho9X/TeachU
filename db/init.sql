@@ -112,3 +112,16 @@ CREATE TABLE IF NOT EXISTS class_metrics (
     deleted_at TIMESTAMP NULL,
     FOREIGN KEY (exam_id) REFERENCES exams(id) ON DELETE CASCADE  -- 新增外键约束
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS ranks (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    exam_id BIGINT UNSIGNED NOT NULL,
+    student_id BIGINT UNSIGNED NOT NULL,
+    `rank` INT NOT NULL,
+    total_score DECIMAL(5,2) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (exam_id) REFERENCES exams(id) ON DELETE CASCADE,
+    FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE,
+    INDEX idx_exam_student (exam_id, student_id)
+)

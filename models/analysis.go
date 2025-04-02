@@ -44,12 +44,12 @@ type StudentAnalysisResponse struct {
 }
 
 type StudentKeypoints struct {
-	Keypoint     string  `json:"keypoint"`
-	Score        float64 `json:"score"`
-	AverageScore float64 `json:"average_score"`
-	TotalScore   float64 `json:"total_score"`
-	ScoreRate    float64 `json:"score_rate"` // 新增字段
-	IsHigh       bool    `json:"is_high"`
+	Keypoint     string  `json:"keypoint"`      // 知识点
+	Score        float64 `json:"score"`         // 学生得分
+	AverageScore float64 `json:"average_score"` // 平均分
+	TotalScore   float64 `json:"total_score"`   //总分
+	ScoreRate    float64 `json:"score_rate"`    //  该知识点得分率
+	IsHigh       bool    `json:"is_high"`       // 是否高于平均分
 	MasteryLevel string  `json:"mastery_level"`
 }
 type StudentHistory struct {
@@ -58,4 +58,25 @@ type StudentHistory struct {
 	Score        float64   `json:"score"`
 	AverageScore float64   `json:"average_score"`
 	Time         time.Time `json:"time"`
+}
+
+type StuRankResp struct {
+	ExamID      uint         `json:"exam_id"`
+	StuRank     []Rank       `json:"rank_list"`    // 添加JSON标签
+	ImproveRank []RankChange `json:"top_progress"` // 修正拼写并添加标签
+	DeclineRank []RankChange `json:"top_regress"`  // 修正拼写并添加标签
+}
+
+type Rank struct {
+	ExamID      uint    `json:"exam_id"`
+	StudentID   uint    `json:"student_id"`
+	StudentName string  `json:"student_name"`
+	Rank        int     `json:"rank"`
+	TotalScore  float64 `json:"total_score"`
+}
+
+type RankChange struct {
+	StudentName string `json:"student_name"`
+	Rank        int    `json:"current_rank"`
+	Change      uint   `json:"change_rank"` // 变化绝对值
 }

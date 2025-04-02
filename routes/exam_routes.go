@@ -14,7 +14,7 @@ func RegisterExamRoutes(r *gin.Engine) {
 	exam := r.Group("/exam")
 	exam.Use(middlewares.JWTAuth())
 	exam.POST("/create", controllers.CreateExam)
-	exam.DELETE("/delete/:id", controllers.DeleteExam)
+	exam.DELETE("/:id", controllers.DeleteExam)
 	exam.GET("/list", controllers.ListExam)
 	score := r.Group("/exam/score")
 	score.POST("/upload", controllers.UploadScore)
