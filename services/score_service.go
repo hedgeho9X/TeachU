@@ -176,6 +176,8 @@ func ListScores(examID uint) ([]models.StudentScoreResponse, error) {
 	for _, v := range scoreMap {
 		response = append(response, *v)
 	}
-
+	sort.Slice(response, func(i, j int) bool {
+		return response[i].Total > response[j].Total
+	})
 	return response, nil
 }
