@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"path/filepath"
 	"strconv"
-	"strings"
 
 	"log"
 
@@ -94,22 +93,16 @@ func CreateExam(c *gin.Context) {
 			c.JSON(http.StatusOK, gin.H{"code": 0, "error": "base64转换失败: " + err.Error()})
 			return
 		}
-		keyPoint, _ = services.AIAnalyzePic(baseContent)
+		keyPoint, err = services.AIAnalyzePic(baseContent)
+		if err != nil {
+			c.JSON(http.StatusOK, gin.H{"code": 0, "error": "内容解析失败: " + err.Error()})
+			return
+		}
 	}
 	// 增加JSON有效性检查
-	if keyPoint == "" {
-		c.JSON(http.StatusOK, gin.H{"code": 0, "error": "无效的ai返回内容"})
-		return
-	}
-
-	// 新增转义字符处理
-	keyPoint = strings.ReplaceAll(keyPoint, `\\(`, "(") // 替换非法转义括号
-	keyPoint = strings.ReplaceAll(keyPoint, `\\)`, ")") // 替换非法转义括号
-	keyPoint = strings.ReplaceAll(keyPoint, `\\`, "")   // 清理多余反斜杠
-
 	result, err := services.ParseQuestions(keyPoint)
 	if err != nil {
-		log.Printf("[ERROR] JSON解析失败: %v\n原始内容: %s", err, keyPoint) // 修改日志格式
+		log.Printf("[ERROR] JSON解析失败: %v\n原始内容: %s", err, keyPoint)
 		c.JSON(http.StatusOK, gin.H{"code": 0, "error": "试题格式解析失败: " + err.Error()})
 		return
 	}

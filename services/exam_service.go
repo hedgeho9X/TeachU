@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"strings"
 
 	"github.com/Hedgeho9X/TeachU/config"
 	"github.com/Hedgeho9X/TeachU/models"
@@ -177,23 +176,9 @@ type Question struct {
 
 // ParseQuestions 解析试题JSON到结构体切片
 func ParseQuestions(jsonStr string) ([]Question, error) {
-	// 预处理JSON字符串
-	jsonStr = strings.TrimSpace(jsonStr)
-	jsonStr = strings.Trim(jsonStr, "```") // 去除可能存在的Markdown代码块符号
-
 	var questions []Question
-	decoder := json.NewDecoder(strings.NewReader(jsonStr))
-	decoder.DisallowUnknownFields() // 防止未知字段
-
-	if err := decoder.Decode(&questions); err != nil {
-		return nil, fmt.Errorf("JSON解析失败: %w (原始内容: %s)", err, jsonStr)
-	}
-
-	// 二次校验必要字段
-	for i, q := range questions {
-		if q.QuestionID == "" || q.Key == "" || q.Content == "" {
-			return nil, fmt.Errorf("第%d题缺少必要字段", i+1)
-		}
+	if err := json.Unmarshal([]byte(jsonStr), &questions); err != nil {
+		return nil, err
 	}
 	return questions, nil
 }
