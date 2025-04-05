@@ -3,6 +3,7 @@ package services
 const (
 	DoubaoLite    = "ep-20250311120726-h7xml"
 	DeepSeekR1    = "ep-20250401115227-n89xn"
+	DoubaoPro     = "doubao-1-5-pro-256k-250115"
 	AnalyzePrompt = `识别试卷内容，提取每道题目的题号、知识点和题目内容。请严格按照以下JSON格式输出，确保：
 - 所有特殊符号正确转义
 - 遇到空数据返回空数组 []

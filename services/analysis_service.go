@@ -1,14 +1,17 @@
 package services
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"math"
 	"sort"
+	"time"
 
 	"github.com/Hedgeho9X/TeachU/config"
 	"github.com/Hedgeho9X/TeachU/models"
+	"github.com/redis/go-redis/v9"
 	"gorm.io/datatypes"
 	"gorm.io/gorm"
 )
@@ -178,9 +181,14 @@ func AnalyzeKeypoint(examID uint) (models.KeypointMetricResp, error) {
 
 func AiAnalyzeClass(examID uint) (string, error) {
 	// 调用豆包进行分析
+	ctx := context.Background()
+	AnalysisResult, err := config.RDB.Get(ctx, fmt.Sprintf("examID:%d", examID)).Result()
+	if err != redis.Nil {
+		return AnalysisResult, nil
+	}
 	var KeypointAnalysis models.KeypointMetricResp
 	var ClassMetric models.ClassMetric
-	KeypointAnalysis, err := AnalyzeKeypoint(examID)
+	KeypointAnalysis, err = AnalyzeKeypoint(examID)
 	if err != nil {
 		return "", err
 	}
@@ -205,6 +213,10 @@ func AiAnalyzeClass(examID uint) (string, error) {
 	result, err := Chat(string(jsonData), DoubaoLite, ScoreAnalyzePrompt)
 	if err != nil {
 		return "", err
+	}
+	err = config.RDB.Set(ctx, fmt.Sprintf("examID:%d", examID), result, 5*time.Hour).Err()
+	if err != nil {
+		return "", fmt.Errorf("redis保存分析内容失败: %v", err)
 	}
 	return result, nil
 }
