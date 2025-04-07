@@ -11,7 +11,7 @@ func SetupRouter() *gin.Engine {
 	// 基础路由
 	r.GET("/", func(c *gin.Context) {
 		c.JSON(200, gin.H{
-			"message": "Welcome to TeachU !!",
+			"message": "Welcome to TeachU ",
 		})
 	})
 
