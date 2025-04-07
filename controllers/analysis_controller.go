@@ -52,6 +52,7 @@ func AiAnalyzeClass(c *gin.Context) {
 	AnalysisContent, err := services.AiAnalyzeClass(uint(ExamIdUint))
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{"code": 0, "error": err.Error()})
+		return
 	}
 	c.JSON(http.StatusOK, gin.H{"code": 1, "msg": "success", "analysis_content": AnalysisContent})
 }

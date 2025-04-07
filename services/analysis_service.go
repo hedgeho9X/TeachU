@@ -38,9 +38,10 @@ func AnalyzeClass(examID uint) (models.ClassMetric, error) {
 		tx.Rollback()
 		return analysis, err
 	}
+	// 修改获取考试总分的查询
 	var examTotalScore float64
 	if err := tx.Model(&models.Problems{}).
-		Select("SUM(total_score)").
+		Select("COALESCE(SUM(total_score), 0) as total_score"). // 使用 COALESCE 处理 NULL
 		Where("exam_id = ?", examID).
 		Row().
 		Scan(&examTotalScore); err != nil {
@@ -68,7 +69,7 @@ func AnalyzeClass(examID uint) (models.ClassMetric, error) {
 	// 防止空数组导致NaN
 	if totalStudents == 0 {
 		tx.Rollback()
-		return analysis, errors.New("没有找到学生成绩数据")
+		return analysis, errors.New("没有找到该班级成绩数据")
 	}
 
 	for i, score := range studentTotals {
