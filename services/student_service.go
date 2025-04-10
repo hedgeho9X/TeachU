@@ -16,7 +16,7 @@ func ListStudents(classID uint) ([]models.Student, error) {
 }
 func CreateStudent(classID uint, student models.Student) error {
 	var existingStudent models.Student
-	if err := config.DB.Where("student_number = ?", student.StudentNumber).First(&existingStudent).Error; err == nil {
+	if err := config.DB.Where("student_number = ? && class_id = ?", student.StudentNumber, classID).First(&existingStudent).Error; err == nil {
 		return fmt.Errorf("学生已存在，学号: %d", student.StudentNumber)
 	}
 	student.ClassID = classID
