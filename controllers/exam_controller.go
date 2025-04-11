@@ -87,7 +87,7 @@ func CreateExam(c *gin.Context) {
 			return
 		}
 		var content = response.Body
-		keyPoint, _ = services.Chat(content, services.DoubaoPro, services.AnalyzePrompt)
+		keyPoint, _ = services.Chat(content, services.DoubaoLite, services.AnalyzePrompt)
 	case ".jpg", ".png":
 		pic, _ := input.File.Open()
 		FileBytes, err := io.ReadAll(pic)
