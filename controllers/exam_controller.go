@@ -50,8 +50,8 @@ func CreateExam(c *gin.Context) {
 	}
 
 	ext := filepath.Ext(input.File.Filename)
-	if ext != ".docx" && ext != ".jpg" && ext != ".png" {
-		c.JSON(http.StatusOK, gin.H{"code": 0, "error": "仅支持.docx文件或jpg/png图片格式"})
+	if ext != ".docx" && ext != ".doc" && ext != ".jpg" && ext != ".png" {
+		c.JSON(http.StatusOK, gin.H{"code": 0, "error": "仅支持.doc/.docx文件或jpg/png图片格式"})
 		return
 	}
 
@@ -60,7 +60,7 @@ func CreateExam(c *gin.Context) {
 
 	// 根据文件类型处理内容
 	switch ext {
-	case ".docx":
+	case ".docx", ".doc":
 		// 使用docconv解析Word文档
 		file, err := input.File.Open()
 		if err != nil {
@@ -72,7 +72,13 @@ func CreateExam(c *gin.Context) {
 		}
 		defer file.Close()
 
-		response, err := docconv.Convert(file, "application/vnd.openxmlformats-officedocument.wordprocessingml.document", true)
+		// 根据文件类型设置MIME类型
+		mimeType := "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+		if ext == ".doc" {
+			mimeType = "application/msword"
+		}
+
+		response, err := docconv.Convert(file, mimeType, true)
 		if err != nil {
 			c.JSON(http.StatusOK, gin.H{
 				"code":  0,
@@ -81,7 +87,7 @@ func CreateExam(c *gin.Context) {
 			return
 		}
 		var content = response.Body
-		keyPoint, _ = services.Chat(content, services.DoubaoLite, services.AnalyzePrompt)
+		keyPoint, _ = services.Chat(content, services.DoubaoPro, services.AnalyzePrompt)
 	case ".jpg", ".png":
 		pic, _ := input.File.Open()
 		FileBytes, err := io.ReadAll(pic)
