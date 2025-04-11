@@ -107,7 +107,8 @@ func Chat(text string, Model string, prompt string) (string, error) {
 	req := model.CreateChatCompletionRequest{
 		// 指定您创建的方舟推理接入点 ID，此处已帮您修改为您的推理接入点 ID
 		// Model: "ep-20250311120726-h7xml",
-		Model: Model,
+		Model:     Model,
+		MaxTokens: volcengine.Int(8192),
 		Messages: []*model.ChatCompletionMessage{
 			{
 				Role: model.ChatMessageRoleSystem,
