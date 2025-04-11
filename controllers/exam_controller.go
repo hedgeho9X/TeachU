@@ -78,16 +78,49 @@ func CreateExam(c *gin.Context) {
 			mimeType = "application/msword"
 		}
 
+		// 添加更详细的日志
+		log.Printf("[INFO] 开始解析文档，文件类型: %s, MIME类型: %s", ext, mimeType)
+
+		// 尝试使用docconv转换
 		response, err := docconv.Convert(file, mimeType, true)
 		if err != nil {
+			log.Printf("[ERROR] 文档解析详细错误: %v", err)
+
+			// 重新打开文件尝试读取文件内容进行调试
+			file.Seek(0, 0) // 重置文件指针到开头
+			fileBytes, readErr := io.ReadAll(file)
+			if readErr == nil {
+				log.Printf("[DEBUG] 文件大小: %d 字节, 前100字节: %v", len(fileBytes), fileBytes[:min(100, len(fileBytes))])
+			}
+
 			c.JSON(http.StatusOK, gin.H{
 				"code":  0,
-				"error": fmt.Sprintf("文档解析失败: %v", err),
+				"error": fmt.Sprintf("文档解析失败: %v，请确保文件格式正确且未损坏", err),
 			})
 			return
 		}
+
 		var content = response.Body
-		keyPoint, _ = services.Chat(content, services.DoubaoLite, services.AnalyzePrompt)
+		log.Printf("[INFO] 文档解析成功，内容长度: %d 字符", len(content))
+
+		// 如果内容为空，返回错误
+		if len(content) == 0 {
+			c.JSON(http.StatusOK, gin.H{
+				"code":  0,
+				"error": "文档内容为空，无法解析",
+			})
+			return
+		}
+
+		keyPoint, err = services.Chat(content, services.DoubaoLite, services.AnalyzePrompt)
+		if err != nil {
+			c.JSON(http.StatusOK, gin.H{
+				"code":  0,
+				"error": fmt.Sprintf("AI分析失败: %v", err),
+			})
+			return
+		}
+
 	case ".jpg", ".png":
 		pic, _ := input.File.Open()
 		FileBytes, err := io.ReadAll(pic)
