@@ -366,3 +366,25 @@ func Rag4Plan(c *gin.Context) {
 		"data": result,
 	})
 }
+
+func Rag4Msg(c *gin.Context) {
+	// 绑定请求参数
+	var input struct {
+		Msg string `json:"msg"`
+	}
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"code": 0,
+			"msg":  "参数错误",
+			"data": err.Error(),
+		})
+		return
+	}
+	prompt, _ := services.Chat(input.Msg, services.DoubaoLite, services.RagAiPrompt)
+	result, _ := services.RagRecommend(prompt)
+	c.JSON(http.StatusOK, gin.H{
+		"code": 1,
+		"msg":  "RAG生成成功",
+		"data": result,
+	})
+}
