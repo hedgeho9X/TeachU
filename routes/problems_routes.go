@@ -1,8 +1,8 @@
 package routes
 
 import (
-	"github.com/Hedgeho9X/TeachU/controllers"
-	"github.com/Hedgeho9X/TeachU/middlewares"
+	"github.com/Hedgeho9X/TeachU/internal/controllers"
+	"github.com/Hedgeho9X/TeachU/internal/middlewares"
 	"github.com/gin-gonic/gin"
 )
 

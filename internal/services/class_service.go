@@ -4,8 +4,8 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/Hedgeho9X/TeachU/config"
-	"github.com/Hedgeho9X/TeachU/models"
+	"github.com/Hedgeho9X/TeachU/internal/config"
+	"github.com/Hedgeho9X/TeachU/internal/models"
 )
 
 // GetClassesByUserID 获取用户创建的班级列表
@@ -29,11 +29,8 @@ func GetClassesByUserID(userID uint) ([]ClassResp, error) {
 	return resp, err
 }
 
-// CreateClassInput 创建班级的输入参数
-
 // CreateClass 创建班级
 func CreateClass(ClassNumber, GradeLevel int, userID uint) error {
-	// 将输入参数转换为班级模型
 	// 检查是否存在相同年级和班级的记录
 	var existingClass models.Class
 	err := config.DB.Where("created_user_id = ? AND grade_level = ? AND class_number = ?", userID, GradeLevel, ClassNumber).First(&existingClass).Error
@@ -68,16 +65,6 @@ func DeleteClass(classID string, userID uint) error {
 		return errors.New("无权删除该班级")
 	}
 
-	// 检查班级是否还有学生
-	// var studentCount int64
-	// if err := config.DB.Model(&models.Student{}).Where("class_id = ?", classID).Count(&studentCount).Error; err != nil {
-	// 	return err
-	// }
-	// if studentCount > 0 {
-	// 	return errors.New("班级中还有学生，无法删除")
-	// }
-
-	// 开启事务
 	tx := config.DB.Begin()
 
 	// 删除班级下的所有学生

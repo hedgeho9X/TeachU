@@ -8,8 +8,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/Hedgeho9X/TeachU/config"
-	"github.com/Hedgeho9X/TeachU/models"
+	"github.com/Hedgeho9X/TeachU/internal/config"
+	"github.com/Hedgeho9X/TeachU/internal/models"
 	"github.com/volcengine/volcengine-go-sdk/service/arkruntime"
 	"github.com/volcengine/volcengine-go-sdk/service/arkruntime/model"
 	"github.com/volcengine/volcengine-go-sdk/volcengine"

@@ -3,7 +3,7 @@ package routes
 import (
 	"github.com/gin-gonic/gin"
 
-	"github.com/Hedgeho9X/TeachU/controllers"
+	"github.com/Hedgeho9X/TeachU/internal/controllers"
 )
 
 // RegisterResourceRoutes 注册资源相关路由

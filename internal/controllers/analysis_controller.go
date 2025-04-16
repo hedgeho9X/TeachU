@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/Hedgeho9X/TeachU/services"
+	"github.com/Hedgeho9X/TeachU/internal/services"
 	"github.com/gin-gonic/gin"
 )
 

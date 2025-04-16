@@ -2,11 +2,12 @@ package controllers
 
 import (
 	"fmt"
-	"github.com/Hedgeho9X/TeachU/config"
 	"net/http"
 
-	"github.com/Hedgeho9X/TeachU/models"
-	"github.com/Hedgeho9X/TeachU/services"
+	"github.com/Hedgeho9X/TeachU/internal/config"
+
+	"github.com/Hedgeho9X/TeachU/internal/models"
+	"github.com/Hedgeho9X/TeachU/internal/services"
 	"github.com/gin-gonic/gin"
 )
 

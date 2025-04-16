@@ -6,8 +6,8 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/Hedgeho9X/TeachU/config"
-	"github.com/Hedgeho9X/TeachU/models"
+	"github.com/Hedgeho9X/TeachU/internal/config"
+	"github.com/Hedgeho9X/TeachU/internal/models"
 	"github.com/aliyun/alibabacloud-oss-go-sdk-v2/oss"
 	"github.com/aliyun/alibabacloud-oss-go-sdk-v2/oss/credentials"
 )

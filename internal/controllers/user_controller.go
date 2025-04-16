@@ -9,8 +9,8 @@ import (
 	"github.com/golang-jwt/jwt/v4"
 	"golang.org/x/crypto/bcrypt"
 
-	"github.com/Hedgeho9X/TeachU/models"
-	"github.com/Hedgeho9X/TeachU/services"
+	"github.com/Hedgeho9X/TeachU/internal/models"
+	"github.com/Hedgeho9X/TeachU/internal/services"
 )
 
 // 推荐在环境变量或配置中存储 Secret

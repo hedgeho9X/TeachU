@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/Hedgeho9X/TeachU/config"
-	"github.com/Hedgeho9X/TeachU/models"
+	"github.com/Hedgeho9X/TeachU/internal/config"
+	"github.com/Hedgeho9X/TeachU/internal/models"
 	"github.com/Hedgeho9X/TeachU/routes"
 )
 

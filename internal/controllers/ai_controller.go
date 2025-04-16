@@ -8,8 +8,8 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/Hedgeho9X/TeachU/config"
-	"github.com/Hedgeho9X/TeachU/services"
+	"github.com/Hedgeho9X/TeachU/internal/config"
+	"github.com/Hedgeho9X/TeachU/internal/services"
 	"github.com/gin-gonic/gin"
 )
 

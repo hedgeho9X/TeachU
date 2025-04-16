@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/Hedgeho9X/TeachU/models"
+	"github.com/Hedgeho9X/TeachU/internal/models"
 )
 
 func StuAnalysis2String(examID uint, studentID uint) (string, error) {

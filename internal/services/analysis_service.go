@@ -9,8 +9,8 @@ import (
 	"sort"
 	"time"
 
-	"github.com/Hedgeho9X/TeachU/config"
-	"github.com/Hedgeho9X/TeachU/models"
+	"github.com/Hedgeho9X/TeachU/internal/config"
+	"github.com/Hedgeho9X/TeachU/internal/models"
 	"github.com/redis/go-redis/v9"
 	"gorm.io/datatypes"
 	"gorm.io/gorm"
@@ -312,6 +312,11 @@ func AnalyzeStudent(examID uint, studentID uint) (models.StudentAnalysisResponse
 
 func AiAnalyzeStudent(examID uint, studentID uint) (string, error) {
 
+	ctx := context.Background()
+	AnalysisResult, err := config.RDB.Get(ctx, fmt.Sprintf("examID:%d", examID)).Result()
+	if err != redis.Nil {
+		return AnalysisResult, nil
+	}
 	analysis, err := AnalyzeStudent(examID, studentID)
 	if err != nil {
 		return "", err
@@ -332,6 +337,10 @@ func AiAnalyzeStudent(examID uint, studentID uint) (string, error) {
 	result, err := Chat(string(jsonData), DoubaoLite, StudentAnalyzePrompt)
 	if err != nil {
 		return "", err
+	}
+	err = config.RDB.Set(ctx, fmt.Sprintf("examID:%d AND studentID:%d", examID, studentID), result, 5*time.Hour).Err()
+	if err != nil {
+		return "", fmt.Errorf("redis保存分析内容失败: %v", err)
 	}
 	return result, nil
 }

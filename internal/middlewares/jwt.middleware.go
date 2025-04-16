@@ -2,23 +2,24 @@ package middlewares
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v4"
 
-	"github.com/Hedgeho9X/TeachU/config"
-	"github.com/Hedgeho9X/TeachU/models"
+	"github.com/Hedgeho9X/TeachU/internal/config"
+	"github.com/Hedgeho9X/TeachU/internal/models"
 )
 
 func JWTAuth() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		fmt.Println("开始 JWT 认证...")
+		log.Println("[INFO]JWT 认证")
 
 		authHeader := c.GetHeader("Authorization")
 		if authHeader == "" {
-			fmt.Println("未找到 Authorization 头")
+			log.Println("未找到 Authorization 头")
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
 				"error": "缺少认证信息",
 			})
@@ -28,7 +29,7 @@ func JWTAuth() gin.HandlerFunc {
 		// 检查 Bearer 格式
 		parts := strings.SplitN(authHeader, " ", 2)
 		if !(len(parts) == 2 && parts[0] == "Bearer") {
-			fmt.Println("Authorization 格式错误")
+			log.Println("Authorization 格式错误")
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
 				"error": "认证格式无效",
 			})
@@ -37,7 +38,7 @@ func JWTAuth() gin.HandlerFunc {
 
 		// 解析 Token
 		tokenString := parts[1]
-		fmt.Printf("收到 Token: %s\n", tokenString)
+		// fmt.Printf("收到 Token: %s\n", tokenString)
 
 		claims := &models.Claims{}
 		token, err := jwt.ParseWithClaims(tokenString, claims, func(token *jwt.Token) (interface{}, error) {
@@ -67,9 +68,9 @@ func JWTAuth() gin.HandlerFunc {
 		fmt.Printf("Token 验证成功，用户 ID: %d,名称:%s, 电话: %s, 邮箱: %s\n", claims.UserID, claims.Username, claims.PhoneNumber, claims.Email)
 		c.Set("userID", claims.UserID)
 		c.Set("username", claims.Username)
-		c.Set("phoneNumber", claims.PhoneNumber) // 新增电话
-		c.Set("email", claims.Email)             // 新增邮箱
-		c.Set("claims", claims)                  // 将整个 claims 对象存入 context
+		c.Set("phoneNumber", claims.PhoneNumber)
+		c.Set("email", claims.Email)
+		c.Set("claims", claims)
 		c.Next()
 	}
 }

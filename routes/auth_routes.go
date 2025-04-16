@@ -3,8 +3,8 @@ package routes
 import (
 	"github.com/gin-gonic/gin"
 
-	"github.com/Hedgeho9X/TeachU/controllers"
-	"github.com/Hedgeho9X/TeachU/middlewares"
+	"github.com/Hedgeho9X/TeachU/internal/controllers"
+	"github.com/Hedgeho9X/TeachU/internal/middlewares"
 )
 
 // RegisterAuthRoutes 注册认证相关路由
