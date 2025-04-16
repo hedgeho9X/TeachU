@@ -313,7 +313,7 @@ func AnalyzeStudent(examID uint, studentID uint) (models.StudentAnalysisResponse
 func AiAnalyzeStudent(examID uint, studentID uint) (string, error) {
 
 	ctx := context.Background()
-	AnalysisResult, err := config.RDB.Get(ctx, fmt.Sprintf("examID:%d", examID)).Result()
+	AnalysisResult, err := config.RDB.Get(ctx, fmt.Sprintf("examID:%d AND studentID:%d", examID, studentID)).Result()
 	if err != redis.Nil {
 		return AnalysisResult, nil
 	}
