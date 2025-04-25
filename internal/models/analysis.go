@@ -80,3 +80,16 @@ type RankChange struct {
 	Rank        int    `json:"current_rank"`
 	Change      uint   `json:"change_rank"` // 变化绝对值
 }
+
+// ClassHistory 代表单次考试的班级分析历史记录
+type ClassHistory struct {
+	ExamID             uint               `json:"exam_id"`             // 考试ID
+	ExamName           string             `json:"exam_name"`           // 考试名称
+	ExamTime           time.Time          `json:"exam_time"`           // 考试时间
+	KeypointMetricResp KeypointMetricResp `json:"keypoint_metric_resp"` // 知识点分析结果 (修改为单个)
+	ClassMetric        ClassMetric        `json:"class_metric"`        // 班级整体指标 (修正 JSON tag)
+}
+
+type ClassHistoryAnalysisResponse struct {
+	ClassHistory []ClassHistory `json:"class_history"`
+}

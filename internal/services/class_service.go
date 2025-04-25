@@ -29,6 +29,14 @@ func GetClassesByUserID(userID uint) ([]ClassResp, error) {
 	return resp, err
 }
 
+func GetClassByID(classID int) (*models.Class, error) {
+	var class models.Class
+	if err := config.DB.First(&class, classID).Error; err != nil {
+		return nil, fmt.Errorf("班级不存在: %v", err)
+	}
+	return &class, nil
+}
+
 // CreateClass 创建班级
 func CreateClass(ClassNumber, GradeLevel int, userID uint) error {
 	// 检查是否存在相同年级和班级的记录

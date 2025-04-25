@@ -42,9 +42,9 @@ func GetAIStream(ctx context.Context, message string) <-chan StreamChunk {
 		stream, err := client.CreateChatCompletionStream(
 			ctx,
 			ark.ChatCompletionRequest{
-				Model: "ep-20250401115227-n89xn",
+				Model: "ep-m-20250405144313-lhqt4",
 				Messages: []ark.ChatCompletionMessage{
-					{Role: ark.ChatMessageRoleSystem, Content: SystemPrompt},
+					{Role: ark.ChatMessageRoleSystem, Content: " "},
 					{Role: ark.ChatMessageRoleUser, Content: message},
 				},
 				Stream: true,

@@ -2,13 +2,16 @@ package controllers
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"math/rand"
 	"net/http"
+	"regexp"
 	"strconv"
 	"time"
 
 	"github.com/Hedgeho9X/TeachU/internal/config"
+	"github.com/Hedgeho9X/TeachU/internal/models"
 	"github.com/Hedgeho9X/TeachU/internal/services"
 	"github.com/gin-gonic/gin"
 )
@@ -17,9 +20,42 @@ func Chat(c *gin.Context) {
 	// 绑定请求参数
 	var input struct {
 		UserMessage string `json:"message"`
+		ClassID     int    `json:"class_id"`
+		Subject     string `json:"subject"`
 	}
+
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"code": 0, "error": err.Error()})
+		return
+	}
+
+	// 检查学科必须为语数外物化生政史地
+	if ok, _ := regexp.MatchString(`^(语文|数学|英语|物理|化学|生物|政治|历史|地理)$`, input.Subject); !ok {
+		c.JSON(http.StatusOK, gin.H{"code": 0, "error": "学科信息有误"})
+		return
+	}
+	//检查班级存在
+	if input.ClassID != 0 {
+		_, err := services.GetClassByID(input.ClassID)
+		if err != nil {
+			c.JSON(http.StatusOK, gin.H{"code": 0, "error": "班级不存在"})
+			return
+		}
+	}
+	ClassHistory, err := services.ClassHistoryAnalysis(input.Subject, uint(input.ClassID))
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{"code": 0, "error": "获取班级历史信息失败"})
+		return
+	}
+	JsonRes := struct {
+		ClassHistoryAnalysisResponse models.ClassHistoryAnalysisResponse `json:"class_history_analysis_resp"`
+	}{
+		ClassHistoryAnalysisResponse: ClassHistory,
+	}
+
+	jsonData, err := json.Marshal(JsonRes)
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{"code": 0, "error": fmt.Sprintf("JSON序列化失败: %v", err)})
 		return
 	}
 
@@ -37,8 +73,9 @@ func Chat(c *gin.Context) {
 	// 监听客户端断开
 	clientGone := c.Writer.CloseNotify()
 
-	// 获取AI响应流
-	stream := services.GetAIStream(ctx, input.UserMessage)
+	FinalPrompt := services.GenerateFinalPrompt(input.UserMessage, string(jsonData))
+	fmt.Println(FinalPrompt)
+	stream := services.GetAIStream(ctx, FinalPrompt)
 
 	// 流式写入响应
 	for {
