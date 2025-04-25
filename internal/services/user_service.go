@@ -191,7 +191,7 @@ func (s *EmailVerificationService) SendCode(recipient string) (string, error) {
 	code := generateRandomCode()
 
 	// 读取HTML模板
-	htmlContent, err := os.ReadFile("services/VerifyCode.html")
+	htmlContent, err := os.ReadFile("internal/services/VerifyCode.html")
 	if err != nil {
 		return "", fmt.Errorf("读取模板失败: %v", err)
 	}
