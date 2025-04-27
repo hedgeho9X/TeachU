@@ -11,7 +11,7 @@ import (
 )
 
 // GeneratePresignedURL 为指定的 OSS 对象生成带处理参数的预签名 URL
-func GeneratePresignedURL(bucketName, objectName, region, endpoint string, expiration time.Duration) (string, error) {
+func GeneratePresignedURL(bucketName, objectName, region, endpoint, processParams string, expiration time.Duration) (string, error) {
 	// 加载默认配置并设置凭证提供者和区域
 	cfg := oss.LoadDefaultConfig().
 		WithCredentialsProvider(credentials.NewEnvironmentVariableCredentialsProvider()).
@@ -27,7 +27,7 @@ func GeneratePresignedURL(bucketName, objectName, region, endpoint string, expir
 		Bucket: oss.Ptr(bucketName),
 		Key:    oss.Ptr(objectName),
 		// 设置文档处理参数
-		// Process: oss.Ptr(processParams),
+		Process: oss.Ptr(processParams),
 	}, oss.PresignExpires(expiration)) // 使用传入的有效期
 
 	if err != nil {
@@ -58,12 +58,12 @@ func FileRead(objectName string) (ReadUrl string, err error) {
 	region := "cn-chengdu"
 	endpoint := "https://oss.hedgeho9.cn" // 自定义域名
 	// 文档处理参数
-	// processParams := "doc/preview,export_1,print_1"
+	processParams := "doc/preview,export_1,print_1"
 	// URL 有效期
 	expiration := 10 * time.Hour
 
 	// 调用新封装的函数
-	presignedURL, err := GeneratePresignedURL(bucketName, objectName, region, endpoint, expiration)
+	presignedURL, err := GeneratePresignedURL(bucketName, objectName, region, endpoint, processParams, expiration)
 	if err != nil {
 		// 直接返回错误，让调用者处理
 		return "", fmt.Errorf("调用 GeneratePresignedURL 失败: %w", err)
