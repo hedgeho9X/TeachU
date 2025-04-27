@@ -39,7 +39,7 @@ func GetResource(c *gin.Context) {
 	if objectKey == "" {
 		c.JSON(http.StatusOK, gin.H{"code": 0, "error": "object_key不能为空"})
 	}
-	resultUrl, err := services.GetResourceUseExternal(objectKey)
+	resultUrl, err := services.FileRead(objectKey)
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{"code": 0, "error": err.Error()})
 		return
