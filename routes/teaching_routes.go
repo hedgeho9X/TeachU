@@ -9,6 +9,7 @@ import (
 
 // RegisterTeachingRoutes 注册教学管理相关路由
 func RegisterTeachingRoutes(r *gin.Engine) {
+	r.Use(middlewares.JWTAuth())
 	// 添加全局中间件处理 Content-Type
 	r.Use(func(c *gin.Context) {
 		c.Header("Content-Type", "application/json")
@@ -17,7 +18,6 @@ func RegisterTeachingRoutes(r *gin.Engine) {
 
 	// 班级路由组
 	class := r.Group("/classes")
-	class.Use(middlewares.JWTAuth()) // 移除重复的 JWTAuth
 	{
 		class.GET("/list", controllers.ListClasses)
 		class.POST("/create", controllers.CreateClass)
@@ -26,8 +26,7 @@ func RegisterTeachingRoutes(r *gin.Engine) {
 
 	// 学生路由组
 	student := r.Group("/students")
-	student.Use(middlewares.JWTAuth())
-	{ // 恢复大括号
+	{
 		student.GET("/search", controllers.ListStudents)
 		student.POST("/batch-import", controllers.ImportStudents)
 		student.DELETE("/delete/:student_number", controllers.DeleteStudent)

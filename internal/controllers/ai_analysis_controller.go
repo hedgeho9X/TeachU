@@ -8,7 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func AnalyzeExam(c *gin.Context) {
+func AiAnalyzeClass(c *gin.Context) {
 	ExamIdStr := c.Query("exam_id")
 	if ExamIdStr == "" {
 		c.JSON(http.StatusOK, gin.H{"error": "exam_id为空"})
@@ -23,16 +23,16 @@ func AnalyzeExam(c *gin.Context) {
 		})
 		return
 	}
-	analysis, err := services.AnalyzeClass(uint(ExamIdUint))
-	KeypointAnalysis, err := services.AnalyzeKeypoint(uint(ExamIdUint))
+	// ExamCla
+	AnalysisContent, err := services.AiAnalyzeClass(uint(ExamIdUint))
 	if err != nil {
-		c.JSON(http.StatusOK, gin.H{"error": err.Error()})
+		c.JSON(http.StatusOK, gin.H{"code": 0, "error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"class_analysis": analysis, "keypoint_analysis": KeypointAnalysis})
+	c.JSON(http.StatusOK, gin.H{"code": 1, "msg": "success", "analysis_content": AnalysisContent})
 }
 
-func AnalyzeStudent(c *gin.Context) {
+func AiAnalyzeStudent(c *gin.Context) {
 	ExamIdStr := c.Query("exam_id")
 	StudentIDstr := c.Query("student_id")
 	if ExamIdStr == "" || StudentIDstr == "" {
@@ -49,33 +49,10 @@ func AnalyzeStudent(c *gin.Context) {
 		})
 		return
 	}
-	analysis, err := services.AnalyzeStudent(uint(ExamIdUint), uint(StudentIDUint))
-	if err != nil {
-		c.JSON(http.StatusOK, gin.H{"error": err.Error()})
-		return
-	}
-	c.JSON(http.StatusOK, gin.H{"student": analysis})
-}
-
-func GetRank(c *gin.Context) {
-	ExamIdStr := c.Query("exam_id")
-	if ExamIdStr == "" {
-		c.JSON(http.StatusOK, gin.H{"error": "exam_id为空"})
-		return
-	}
-	// 调用services层分析考试
-	ExamIdUint, err := strconv.ParseUint(ExamIdStr, 10, 64)
-	if err != nil {
-		c.JSON(http.StatusOK, gin.H{
-			"code": "0",
-			"msg":  "exam_id必须为数字",
-		})
-		return
-	}
-	rank, err := services.GetStuRank(uint(ExamIdUint))
+	AnalysisContent, err := services.AiAnalyzeStudent(uint(ExamIdUint), uint(StudentIDUint))
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{"code": 0, "error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"code": 1, "rank": rank})
+	c.JSON(http.StatusOK, gin.H{"code": 1, "msg": "success", "analysis": AnalysisContent})
 }
