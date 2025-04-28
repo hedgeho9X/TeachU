@@ -213,20 +213,6 @@ func GetPPtTemplates(c *gin.Context) {
 	pageNum := c.Query("page_num")
 	pageSize := c.Query("page_size")
 
-	// 去除空格
-	// style = strings.TrimSpace(style)
-	// color = strings.TrimSpace(color)
-	// industry = strings.TrimSpace(industry)
-	// pageNum = strings.TrimSpace(pageNum)
-	// pageSize = strings.TrimSpace(pageSize)
-	// fmt.Print(style, color, industry, pageNum, pageSize)
-	// // 从query参数中获取输入
-	// style := c.Query("style")        // 风格类型
-	// color := c.Query("color")        // 颜色类型
-	// industry := c.Query("industry")  // 行业类型
-	// pageNum := c.Query("page_num")   // 页数
-	// pageSize := c.Query("page_size") // 每页数量
-
 	// 转换页码和每页数量为整数
 	pageNumInt := 1
 	if num, err := strconv.Atoi(pageNum); err == nil && num > 0 {
@@ -378,50 +364,6 @@ func GetRecommmend(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"code": 1,
 		"msg":  "获取推荐主题成功",
-		"data": result,
-	})
-}
-
-func Rag4Plan(c *gin.Context) {
-	// 绑定请求参数
-	var input struct {
-		Msg string `json:"msg"`
-	}
-	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusOK, gin.H{
-			"code": 0,
-			"msg":  "参数错误",
-			"data": err.Error(),
-		})
-		return
-	}
-	prompt, _ := services.Chat(input.Msg, services.DoubaoLite, services.RagAiPrompt)
-	result, _ := services.RagRecommend(prompt)
-	c.JSON(http.StatusOK, gin.H{
-		"code": 1,
-		"msg":  "RAG生成成功",
-		"data": result,
-	})
-}
-
-func Rag4Msg(c *gin.Context) {
-	// 绑定请求参数
-	var input struct {
-		Msg string `json:"msg"`
-	}
-	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusOK, gin.H{
-			"code": 0,
-			"msg":  "参数错误",
-			"data": err.Error(),
-		})
-		return
-	}
-	prompt, _ := services.Chat(input.Msg, services.DoubaoLite, services.RagAiPrompt)
-	result, _ := services.RagRecommend(prompt)
-	c.JSON(http.StatusOK, gin.H{
-		"code": 1,
-		"msg":  "RAG生成成功",
 		"data": result,
 	})
 }

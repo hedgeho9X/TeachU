@@ -2,11 +2,11 @@ package controllers
 
 import (
 	"context"
-	"encoding/json" // 导入 encoding/json 包
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
-	"time" // 导入 time 包
+	"time"
 
 	"github.com/Hedgeho9X/TeachU/internal/config"
 	"github.com/Hedgeho9X/TeachU/internal/services"
@@ -131,11 +131,11 @@ func Rag4Stu(c *gin.Context) {
 	}
 	recommendJSON = string(recommendJSONBytes) // 转换回 string 类型
 
-	// 将 JSON 字符串存入 Redis，设置过期时间（例如 1 小时）
+	// 将 JSON 字符串存入 Redis
 	err = config.RDB.Set(ctx, redisKey, recommendJSON, 1*time.Hour).Err()
 	if err != nil {
 		log.Printf("Redis 存储 RAG 推荐失败: %v", err)
-		// 缓存失败不应阻止成功响应，但需要记录日志
+		// 缓存失败不应阻止成功响应，记录日志
 	} else {
 		log.Printf("成功将 RAG 推荐存入 Redis: %s", redisKey)
 	}
