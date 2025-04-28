@@ -104,9 +104,13 @@ const SystemPrompt = `
 ​知识图谱化：用思维导图梳理核心概念关系
 ​反思性问题：提出开放性思考
 ​六、教学时间安排
-使用mermaid给出教学时间的建议
+使用mermaid给出教学时间的建议，时间的分隔使用逗号，统一采用HH:MM格式
+​例：
+​1. 08:00-09:00 问题情境导入
+​2. 09:00-10:00 新知探究活动
+mermaid的版本为：11.6.0 ,生成内容应当符合mermaid语法
 七、教学大纲总结
-使用mermaid绘出该堂课程的思维导图
+使用mermaid绘出该堂课程的思维导图，生成内容应当符合mermaid语法
 `
 
 func GenerateFinalPrompt(topic string, history string) string {
