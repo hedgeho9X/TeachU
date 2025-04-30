@@ -9,6 +9,7 @@ import (
 	"github.com/Hedgeho9X/TeachU/internal/models"
 )
 
+// StuAnalysis2String将学生学情json转换为string
 func StuAnalysis2String(examID uint, studentID uint) (string, error) {
 	analysis, err := AnalyzeStudent(examID, studentID)
 	if err != nil {
@@ -33,7 +34,7 @@ func RagRecommend(prompt string) (map[string]interface{}, error) {
 	// 1. 调用RAG服务
 	reqBody := fmt.Sprintf(`{"question": "%s"}`, prompt)
 
-	// 2. 创建HTTP请求
+	// 2. 创建HTTP请求->server2
 	req, err := http.NewRequest(
 		"POST",
 		"http://118.145.201.37:8000/recommend",
