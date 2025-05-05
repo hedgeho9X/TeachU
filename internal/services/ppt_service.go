@@ -115,25 +115,46 @@ func GeneratePPT(auth *AuthConfig, reqData GeneratePPTRequest) (*CommonResponse,
 
 	var result CommonResponse
 	err = json.NewDecoder(resp.Body).Decode(&result)
+	if result.Desc == "次数不足" {
+		// 返回特定的错误表示次数不足，同时响应体为 nil
+		return nil, fmt.Errorf("API 调用次数不足") // 或者可以定义一个更具体的错误类型
+	}
 	return &result, err
 }
 
 // 查询PPT生成进度
+// GetPPTProgress 查询PPT生成进度
+// auth: 讯飞开放平台认证信息
+// sid: PPT生成的会话ID
+// 返回包含进度信息的通用响应结构和可能发生的错误。
+// 如果API返回“次数不足”，则返回一个特定的错误。
 func GetPPTProgress(auth *AuthConfig, sid string) (*CommonResponse, error) {
 	url := fmt.Sprintf("https://zwapi.xfyun.cn/api/ppt/v2/progress?sid=%s", sid)
 
-	request, _ := createRequest(auth, "GET", url, nil)
+	request, err := createRequest(auth, "GET", url, nil)
+	// 检查 createRequest 是否返回错误
+	if err != nil {
+		return nil, fmt.Errorf("创建请求失败: %w", err)
+	}
 
 	client := &http.Client{}
 	resp, err := client.Do(request)
 	if err != nil {
-		return nil, err
+		// 返回网络请求错误
+		return nil, fmt.Errorf("执行请求失败: %w", err)
 	}
 	defer resp.Body.Close()
 
 	var result CommonResponse
-	err = json.NewDecoder(resp.Body).Decode(&result)
-	return &result, err
+	// 检查 JSON 解码错误
+	if err := json.NewDecoder(resp.Body).Decode(&result); err != nil {
+		return nil, fmt.Errorf("解码响应失败: %w", err)
+	}
+
+	// 检查讯飞 API 返回的描述信息是否为“次数不足”
+
+	// 正常返回结果
+	return &result, nil
 }
 
 // func main() {

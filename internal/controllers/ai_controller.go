@@ -166,12 +166,24 @@ func PptGenerate(c *gin.Context) {
 		AIImage:    input.AIImage,
 		IsCardNote: true,
 	}
-	pptRes, _ := services.GeneratePPT(auth, pptReq)
+	pptRes, err := services.GeneratePPT(auth, pptReq)
+	if err != nil {
+		c.JSON(
+			http.StatusOK,
+			gin.H{
+				"code": 0,
+				"msg":  "PPT生成失败",
+				"data": err.Error(),
+			},
+		)
+		return
+	}
 	c.JSON(http.StatusOK, gin.H{
 		"code": 1,
 		"msg":  "PPT生成响应",
 		"data": pptRes,
 	})
+
 	fmt.Printf("PPT生成响应: %+v\n", pptRes)
 }
 
