@@ -13,17 +13,15 @@ import (
 	"github.com/Hedgeho9X/TeachU/internal/services"
 )
 
-// 推荐在环境变量或配置中存储 Secret
-// var jwtSecret = []byte("your-secret-key")
-
-// 自定义 Claims，存放手机号信息
-// 修改 AuthClaims
+// AuthClaims 定义了 JWT 的自定义 Claims，包含用户 ID。
 type AuthClaims struct {
 	UserID uint64 `json:"user_id"`
 	jwt.RegisteredClaims
 }
 
-// Register 注册
+// Register 处理用户注册请求。
+// 它接收用户的手机号、密码、确认密码、用户名、学科、邮箱和验证码，
+// 进行校验后创建新用户。
 func Register(c *gin.Context) {
 	// 解析请求 JSON
 	var input struct {
@@ -124,11 +122,11 @@ func Register(c *gin.Context) {
 	}
 	//验证邮箱验证码
 	email := services.NewEmailVerificationService(services.EmailConfig{
-		From:      "rjl7@qq.com", // 改为小写
+		From:      "rjl7@qq.com",
 		FromAlias: "EduSpark",
 		Password:  "nqwryufsseyxfaei",
 		Host:      "smtp.qq.com",
-		Port:      465, // 改为 SSL 端口
+		Port:      465,
 	})
 	if !email.VerifyCode(input.Email, input.Code) {
 		c.JSON(http.StatusOK, gin.H{
@@ -149,14 +147,15 @@ func Register(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{"code": 0, "error": "注册失败: " + err.Error()})
 		return
 	}
-	// 调用 service 层执行注册
+
 	c.JSON(http.StatusOK, gin.H{
 		"code":    1,
 		"message": "注册成功",
 	})
 }
 
-// Login 登录
+// Login 处理用户通过手机号和密码登录的请求。
+// 验证成功后返回 JWT Token。
 func Login(c *gin.Context) {
 	var input struct {
 		PhoneNumber string `json:"phone_number" binding:"required"`
@@ -172,24 +171,19 @@ func Login(c *gin.Context) {
 	// 查找用户
 	user, err := services.GetUserByPhoneNumber(input.PhoneNumber)
 	if err != nil {
-		// fmt.Printf("用户查找失败: %v\n", err)
 		c.JSON(http.StatusOK, gin.H{"code": 0, "error": "该账号未注册"})
 		return
 	}
 
 	// 验证密码
 	if err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(input.Password)); err != nil {
-		// fmt.Printf("密码验证失败: %v\n", err)
 		c.JSON(http.StatusOK, gin.H{"code": 0, "error": "手机号或密码错误"})
 		return
 	}
 
-	// fmt.Printf("用户 %s 登录成功，准备生成 Token\n", user.PhoneNumber)
-
 	// 生成 Token
 	token, err := services.GenerateToken(uint(user.ID))
 	if err != nil {
-		// fmt.Printf("Token 生成失败: %v\n", err)
 		c.JSON(http.StatusOK, gin.H{
 			"code":  0,
 			"error": "Token 生成失败",
@@ -204,6 +198,8 @@ func Login(c *gin.Context) {
 	})
 }
 
+// Email2Login 处理用户通过邮箱和验证码登录的请求。
+// 验证成功后返回 JWT Token。
 func Email2Login(c *gin.Context) {
 	var input struct {
 		Email string `json:"email" binding:"required"`
@@ -231,17 +227,18 @@ func Email2Login(c *gin.Context) {
 	}
 	//验证邮箱验证码
 	email := services.NewEmailVerificationService(services.EmailConfig{
-		From:      "rjl7@qq.com", // 改为小写
+		From:      "rjl7@qq.com",
 		FromAlias: "EduSpark",
 		Password:  "nqwryufsseyxfaei",
 		Host:      "smtp.qq.com",
-		Port:      465, // 改为 SSL 端口
+		Port:      465,
 	})
 	if !email.VerifyCode(input.Email, input.Code) {
 		c.JSON(http.StatusOK, gin.H{
 			"code":  0,
 			"error": "验证码验证失败.",
 		})
+		return // 验证码失败时应返回
 	}
 	//验证成功，返回token
 	token, err := services.GenerateToken(uint(user.ID))
@@ -261,6 +258,8 @@ func Email2Login(c *gin.Context) {
 
 }
 
+// ResetPassword 处理已登录用户重置密码的请求。
+// 需要提供旧密码和新密码。
 func ResetPassword(c *gin.Context) {
 	// 解析请求 JSON
 	var input struct {
@@ -275,7 +274,14 @@ func ResetPassword(c *gin.Context) {
 		return
 	}
 	// 获取当前登录用户 ID
-	userID, _ := c.Get("userID")
+	userID, exists := c.Get("userID")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{ // 使用正确的状态码
+			"code":  0,
+			"error": "用户未登录",
+		})
+		return
+	}
 	// 调用 service 层执行密码校验和更新
 	if err := services.ResetPasswordService(userID.(uint), input.OldPassword, input.NewPassword); err != nil {
 		c.JSON(http.StatusOK, gin.H{
@@ -290,7 +296,7 @@ func ResetPassword(c *gin.Context) {
 	})
 }
 
-// ForgetPassword 通过邮箱验证码重置密码
+// ForgetPassword 处理用户通过邮箱验证码忘记密码并重置密码的请求。
 func ForgetPassword(c *gin.Context) {
 	// 解析请求 JSON
 	var input struct {
@@ -348,11 +354,11 @@ func ForgetPassword(c *gin.Context) {
 
 	// 验证邮箱验证码
 	email := services.NewEmailVerificationService(services.EmailConfig{
-		From:      "rjl7@qq.com", // 改为小写
+		From:      "rjl7@qq.com",
 		FromAlias: "EduSpark",
 		Password:  "nqwryufsseyxfaei",
 		Host:      "smtp.qq.com",
-		Port:      465, // 改为 SSL 端口
+		Port:      465,
 	})
 	if !email.VerifyCode(input.Email, input.Code) {
 		c.JSON(http.StatusOK, gin.H{
@@ -387,6 +393,7 @@ func ForgetPassword(c *gin.Context) {
 	)
 }
 
+// SendCode 处理发送邮箱验证码的请求。
 func SendCode(c *gin.Context) {
 	// 解析请求 JSON
 	var input struct {
@@ -426,11 +433,11 @@ func SendCode(c *gin.Context) {
 	}
 	// 调用 service 层发送验证码
 	email := services.NewEmailVerificationService(services.EmailConfig{
-		From:      "rjl7@qq.com", // 改为小写
+		From:      "rjl7@qq.com",
 		FromAlias: "EduSpark",
 		Password:  "nqwryufsseyxfaei",
 		Host:      "smtp.qq.com",
-		Port:      465, // 改为 SSL 端口
+		Port:      465,
 	})
 	if _, err := email.SendCode(input.Email); err != nil {
 		c.JSON(http.StatusOK, gin.H{
@@ -445,6 +452,7 @@ func SendCode(c *gin.Context) {
 	})
 }
 
+// VerifyCode 处理验证邮箱验证码的请求。
 func VerifyCode(c *gin.Context) {
 	// 解析请求 JSON
 	var input struct {
@@ -475,14 +483,13 @@ func VerifyCode(c *gin.Context) {
 		return
 	}
 	email := services.NewEmailVerificationService(services.EmailConfig{
-		From:      "rjl7@qq.com", // 改为小写
+		From:      "rjl7@qq.com",
 		FromAlias: "EduSpark",
 		Password:  "nqwryufsseyxfaei",
 		Host:      "smtp.qq.com",
-		Port:      465, // 改为 SSL 端口
+		Port:      465,
 	})
 	// 调用 service 层验证验证码
-	// 验证邮箱验证码
 	Ok := email.VerifyCode(input.Email, input.Code)
 	if !Ok {
 		c.JSON(http.StatusOK, gin.H{
